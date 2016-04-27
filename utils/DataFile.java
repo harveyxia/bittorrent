@@ -1,11 +1,13 @@
+package utils;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
 /**
- * Harvey Xia.
+ * Wrapper around in-progress torrent data files.
  */
-public class TorrentFileImpl {
+public class DataFile {
     public static final String MODE = "rw";
     private final RandomAccessFile file;
 
@@ -23,7 +25,7 @@ public class TorrentFileImpl {
 //        }
 //    }
 
-    public TorrentFileImpl(String filename, long length) throws IOException {
+    public DataFile(String filename, long length) throws IOException {
         file = new RandomAccessFile(filename, MODE);
         file.setLength(length);
     }
