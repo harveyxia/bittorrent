@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b9cdcb4a-6276-479a-9da9-36c82b9c29fd" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/Client.java" afterPath="$PROJECT_DIR$/core/Client.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="bittorrent.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -53,8 +53,8 @@
       <file leaf-file-name="Client.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/Client.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.15852048">
-              <caret line="23" column="5" selection-start-line="23" selection-start-column="5" selection-end-line="23" selection-end-column="5" />
+            <state vertical-scroll-proportion="0.2972259">
+              <caret line="32" column="38" selection-start-line="32" selection-start-column="38" selection-end-line="32" selection-end-column="38" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#228#229#0" expanded="true" />
@@ -68,8 +68,17 @@
         <entry file="file://$PROJECT_DIR$/utils/MessageBuilder.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="15" column="13" selection-start-line="15" selection-start-column="13" selection-end-line="15" selection-end-column="13" />
-              <folding />
+              <caret line="53" column="71" selection-start-line="53" selection-start-column="71" selection-end-line="53" selection-end-column="71" />
+              <folding>
+                <element signature="e#473#474#0" expanded="true" />
+                <element signature="e#522#523#0" expanded="true" />
+                <element signature="e#568#569#0" expanded="true" />
+                <element signature="e#622#623#0" expanded="true" />
+                <element signature="e#671#672#0" expanded="true" />
+                <element signature="e#726#727#0" expanded="true" />
+                <element signature="e#882#883#0" expanded="true" />
+                <element signature="e#949#950#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -511,14 +520,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/MessageBuilderTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.13870542">
-          <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils/DataFile.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.51519156">
@@ -535,18 +536,35 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tests/MessageBuilderTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.13870542">
+          <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/utils/MessageBuilder.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="15" column="13" selection-start-line="15" selection-start-column="13" selection-end-line="15" selection-end-column="13" />
-          <folding />
+          <caret line="53" column="71" selection-start-line="53" selection-start-column="71" selection-end-line="53" selection-end-column="71" />
+          <folding>
+            <element signature="e#473#474#0" expanded="true" />
+            <element signature="e#522#523#0" expanded="true" />
+            <element signature="e#568#569#0" expanded="true" />
+            <element signature="e#622#623#0" expanded="true" />
+            <element signature="e#671#672#0" expanded="true" />
+            <element signature="e#726#727#0" expanded="true" />
+            <element signature="e#882#883#0" expanded="true" />
+            <element signature="e#949#950#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/Client.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.15852048">
-          <caret line="23" column="5" selection-start-line="23" selection-start-column="5" selection-end-line="23" selection-end-column="5" />
+        <state vertical-scroll-proportion="0.2972259">
+          <caret line="32" column="38" selection-start-line="32" selection-start-column="38" selection-end-line="32" selection-end-column="38" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#228#229#0" expanded="true" />
