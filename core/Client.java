@@ -17,33 +17,12 @@ public class Client {
     private static final int BACKLOG = 10;
     private static final int CLIENT_PORT = 200;
     private static final int SERVER_PORT = 6789;
-    private HashMap<Inet4Address, ConnectionState> peers;
-
-    private void onReceiveMessage(byte[] message) {
-        MessageBuilder.MessageId messageId = getMessageId(message);
-        switch (messageId) {
-            case CHOKE_ID:
-                break;
-            case INTERESTED_ID:
-                break;
-            case NOT_INTERESTED_ID:
-                break;
-            case HAVE_ID:
-                break;
-            case REQUEST_ID:
-                break;
-            case PIECE_ID:
-                break;
-            case BITFIELD_ID:
-                break;
-        }
-    }
+    private HashMap<Inet4Address, ConnectionState> connectionStates;
+    private HashMap<Inet4Address, Socket> connections;
 
     public Client() {
-        this.peers = new HashMap<>();
-    }
-
-    public static void main(String[] argv) {
+        this.connectionStates = new HashMap<>();
+        this.connections = new HashMap<>();
     }
 
     public void listen() {
@@ -51,7 +30,25 @@ public class Client {
         try (ServerSocket socket = new ServerSocket(SERVER_PORT, BACKLOG)) {
 
             // Run server thread
-            Thread serverThread = new Thread(new ClientListener(socket));
+            Thread serverThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+
+                        // Accept peer connections
+                        try (Socket peer = socket.accept()) {
+                            connections.put((Inet4Address) peer.getInetAddress(), peer);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        // Process any new messages
+                        for (Socket peer : connections.values()) {
+                            // TODO: process messages
+                        }
+                    }
+                }
+            });
             serverThread.run();
 
         } catch (IOException e) {
@@ -76,11 +73,31 @@ public class Client {
         }
 
         try (Socket socket = new Socket(peer, SERVER_PORT, localAddr, CLIENT_PORT)) {
-            peers.put(peer, ConnectionState.getInitialState());
+            connectionStates.put(peer, ConnectionState.getInitialState());
             // TODO: send desired filename
         } catch (IOException e) {
             e.printStackTrace();
             return;
+        }
+    }
+
+    private void onReceiveMessage(byte[] message) {
+        MessageBuilder.MessageId messageId = getMessageId(message);
+        switch (messageId) {
+            case CHOKE_ID:
+                break;
+            case INTERESTED_ID:
+                break;
+            case NOT_INTERESTED_ID:
+                break;
+            case HAVE_ID:
+                break;
+            case REQUEST_ID:
+                break;
+            case PIECE_ID:
+                break;
+            case BITFIELD_ID:
+                break;
         }
     }
 
