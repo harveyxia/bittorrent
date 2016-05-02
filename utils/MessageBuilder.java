@@ -1,38 +1,40 @@
 package utils;
 
-import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Build torrent messages.
  */
 public class MessageBuilder {
 
-    public static final int CHOKE_ID = 0;
-    public static final int INTERESTED_ID = 1;
-    public static final int NOT_INTERESTED = 2;
-    public static final int HAVE_ID = 3;
-    public static final int REQUEST_ID = 4;
-    public static final int PIECE_ID = 5;
-    public static final int BITFIELD_ID = 6;
+    public static final int intByteLength = 4; // number of bytes per int
 
-    public static String buildChoke() {
-        return Integer.toString(CHOKE_ID);
+    public enum MessageId {
+        CHOKE_ID, INTERESTED_ID, NOT_INTERESTED, HAVE_ID, REQUEST_ID, PIECE_ID, BITFIELD_ID
     }
 
-    public static String buildInterested() {
-        return Integer.toString(INTERESTED_ID);
+    public static byte[] buildChoke() {
+        return intToByte(MessageId.CHOKE_ID.ordinal());
     }
 
-    public static String buildNotInterested() {
-        return Integer.toString(NOT_INTERESTED);
+    public static byte[] buildInterested() {
+        return intToByte(MessageId.INTERESTED_ID.ordinal());
+    }
+
+    public static byte[] buildNotInterested() {
+        return intToByte(MessageId.NOT_INTERESTED.ordinal());
     }
 
 
     /**
      * @param pieceIndex zero-based index of a piece that is downloaded and verified
      */
-    public static String buildHave(int pieceIndex) {
-        return HAVE_ID + ":" + Integer.toString(pieceIndex);
+    public static byte[] buildHave(int pieceIndex) {
+        byte[] message = new byte[2 * intByteLength];
+        System.arraycopy(intToByte(MessageId.HAVE_ID.ordinal()), 0, message, 0, intByteLength);
+        System.arraycopy(intToByte(pieceIndex), 0, message, intByteLength, intByteLength);
+        return message;
     }
 
 
@@ -41,8 +43,13 @@ public class MessageBuilder {
      * @param begin      Zero-based byte offset within piece
      * @param length     Integer specifying requested length
      */
-    public static String buildRequest(int pieceIndex, int begin, int length) {
-        return String.format(REQUEST_ID + ":%d,%d,%d", pieceIndex, begin, length);
+    public static byte[] buildRequest(int pieceIndex, int begin, int length) {
+        byte[] message = new byte[4 * intByteLength];
+        System.arraycopy(intToByte(MessageId.REQUEST_ID.ordinal()), 0, message, 0, intByteLength);
+        System.arraycopy(intToByte(pieceIndex), 0, message, intByteLength, intByteLength);
+        System.arraycopy(intToByte(begin), 0, message, intByteLength * 2, intByteLength);
+        System.arraycopy(intToByte(length), 0, message, intByteLength * 3, intByteLength);
+        return message;
     }
 
     /**
@@ -50,17 +57,30 @@ public class MessageBuilder {
      * @param begin      Zero-based byte offset within piece
      * @param block      The data
      */
-    public static String buildPiece(int pieceIndex, int begin, byte[] block) {
-        String blockString = new String(block, StandardCharsets.UTF_8);
-        return String.format(PIECE_ID + ":%d,%d,%s", pieceIndex, begin, blockString);
+    public static byte[] buildPiece(int pieceIndex, int begin, byte[] block) {
+        byte[] message = new byte[3 * intByteLength + block.length];
+        System.arraycopy(intToByte(MessageId.PIECE_ID.ordinal()), 0, message, 0, intByteLength);
+        System.arraycopy(intToByte(pieceIndex), 0, message, intByteLength, intByteLength);
+        System.arraycopy(intToByte(begin), 0, message, intByteLength * 2, intByteLength);
+        System.arraycopy(block, 0, message, intByteLength * 3, block.length);
+        return message;
     }
 
     /**
      * @param bitfield Byte array representing bitfield
      */
-    public static String buildBitfield(byte[] bitfield) {
-        String bitfieldString = new String(bitfield, StandardCharsets.UTF_8);
-        return String.format(BITFIELD_ID + ":%s", bitfieldString);
+    public static byte[] buildBitfield(byte[] bitfield) {
+        byte[] message = new byte[intByteLength + bitfield.length];
+        System.arraycopy(intToByte(MessageId.BITFIELD_ID.ordinal()), 0, message, 0, intByteLength);
+        System.arraycopy(bitfield, 0, message, intByteLength, bitfield.length);
+        return message;
+    }
+
+    private static byte[] intToByte(int i) {
+        ByteBuffer b = ByteBuffer.allocate(intByteLength);
+        b.order(ByteOrder.BIG_ENDIAN);
+        b.putInt(i);
+        return b.array();
     }
 
 }
