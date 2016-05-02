@@ -1,18 +1,18 @@
-package utils;
+package message;
 
 /**
- * Representation of request message fields.
+ * Object representation of piece message fields.
  */
-public class Request {
+public class Piece {
 
     private int pieceIndex;
     private int begin;
-    private int length;
+    private byte[] block;
 
-    public Request(int pieceIndex, int begin, int length) {
+    public Piece(int pieceIndex, int begin, byte[] block) {
         this.pieceIndex = pieceIndex;
         this.begin = begin;
-        this.length = length;
+        this.block = block;
     }
 
     public int getPieceIndex() {
@@ -23,7 +23,7 @@ public class Request {
         return begin;
     }
 
-    public int getLength() {
-        return length;
+    public byte[] getBlock() {
+        return block;
     }
 }

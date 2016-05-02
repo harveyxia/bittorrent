@@ -1,4 +1,4 @@
-package utils;
+package message;
 
 /**
  * Representation of bitfield.
