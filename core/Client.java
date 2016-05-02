@@ -1,13 +1,13 @@
 package core;
 
 import utils.DataFile;
-import utils.MessageBuilder;
+import message.MessageBuilder;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
 
-import static utils.MessageParser.getMessageId;
+import static message.MessageParser.getMessageId;
 
 /**
  * Bittorrent client.
@@ -28,20 +28,17 @@ public class Client {
     public void listen() {
         // TODO: start server socket thread listening for peer connections
         try (ServerSocket socket = new ServerSocket(SERVER_PORT, BACKLOG)) {
-
             // Run server thread
             Thread serverThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     while (true) {
-
                         // Accept peer connections
                         try (Socket peer = socket.accept()) {
                             connections.put((Inet4Address) peer.getInetAddress(), peer);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-
                         // Process any new messages
                         for (Socket peer : connections.values()) {
                             // TODO: process messages
@@ -50,7 +47,6 @@ public class Client {
                 }
             });
             serverThread.run();
-
         } catch (IOException e) {
             e.printStackTrace();
         }
