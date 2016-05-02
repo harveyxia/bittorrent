@@ -1,14 +1,37 @@
 package core;
 
 import utils.DataFile;
+import utils.MessageBuilder;
 
 import java.net.Inet4Address;
 import java.util.HashMap;
+
+import static tests.MessageParser.getMessageId;
 
 /**
  * Bittorrent client.
  */
 public class Client {
+
+    private void switchMessage(byte[] message) {
+        MessageBuilder.MessageId messageId = getMessageId(message);
+        switch (messageId) {
+            case CHOKE_ID:
+                break;
+            case INTERESTED_ID:
+                break;
+            case NOT_INTERESTED:
+                break;
+            case HAVE_ID:
+                break;
+            case REQUEST_ID:
+                break;
+            case PIECE_ID:
+                break;
+            case BITFIELD_ID:
+                break;
+        }
+    }
 
     private HashMap<Inet4Address, ConnectionState> peers;
 

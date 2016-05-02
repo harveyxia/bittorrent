@@ -14,7 +14,7 @@ public class MessageBuilderTest {
 
     @Test
     public void testBuildChoke() throws Exception {
-        assertEquals("choke:", MessageBuilder.buildChoke());
+        assertEquals(MessageBuilder.buildChoke(), MessageBuilder.buildChoke());
     }
 
     @Test
