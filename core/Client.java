@@ -3,7 +3,8 @@ package core;
 import utils.DataFile;
 import utils.MessageBuilder;
 
-import java.net.Inet4Address;
+import java.io.IOException;
+import java.net.*;
 import java.util.HashMap;
 
 import static tests.MessageParser.getMessageId;
@@ -12,6 +13,11 @@ import static tests.MessageParser.getMessageId;
  * Bittorrent client.
  */
 public class Client {
+
+    private static final int BACKLOG = 10;
+    private static final int CLIENT_PORT = 200;
+    private static final int SERVER_PORT = 6789;
+    private HashMap<Inet4Address, ConnectionState> peers;
 
     private void onReceiveMessage(byte[] message) {
         MessageBuilder.MessageId messageId = getMessageId(message);
@@ -33,8 +39,6 @@ public class Client {
         }
     }
 
-    private HashMap<Inet4Address, ConnectionState> peers;
-
     public Client() {
         this.peers = new HashMap<>();
     }
@@ -44,6 +48,15 @@ public class Client {
 
     public void listen() {
         // TODO: start server socket thread listening for peer connections
+        try (ServerSocket socket = new ServerSocket(SERVER_PORT, BACKLOG)) {
+
+            // Run server thread
+            Thread serverThread = new Thread(new ClientListener(socket));
+            serverThread.run();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Inet4Address[] getPeers() {
@@ -51,9 +64,24 @@ public class Client {
         return new Inet4Address[0];
     }
 
-    public void connectPeer(Inet4Address peer) {
+    public void connect(Inet4Address peer) {
         // TODO: setup TCP connection with peer
-        // TODO: send desired filename
+        Inet4Address localAddr;
+
+        try {
+            localAddr = (Inet4Address) InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        try (Socket socket = new Socket(peer, SERVER_PORT, localAddr, CLIENT_PORT)) {
+            peers.put(peer, ConnectionState.getInitialState());
+            // TODO: send desired filename
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
     }
 
     public void sendHave(Inet4Address peer) {
@@ -71,7 +99,7 @@ public class Client {
     public void sendUninterested(Inet4Address peer) {
     }
 
-    // TODO: implementing keep-alive messages?
+    // TODO: are we implementing keep-alive messages?
     public void sendKeepAlive(Inet4Address peer) {
     }
 
