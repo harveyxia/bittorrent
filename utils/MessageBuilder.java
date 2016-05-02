@@ -1,5 +1,7 @@
 package utils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -33,10 +35,14 @@ public class MessageBuilder {
      * @param pieceIndex zero-based index of a piece that is downloaded and verified
      */
     public static byte[] buildHave(int pieceIndex) {
-        byte[] message = new byte[2 * intByteLength];
-        System.arraycopy(intToByte(MessageId.HAVE_ID.ordinal()), 0, message, 0, intByteLength);
-        System.arraycopy(intToByte(pieceIndex), 0, message, intByteLength, intByteLength);
-        return message;
+        ByteArrayOutputStream message = new ByteArrayOutputStream();
+        try {
+            message.write(intToByte(MessageId.HAVE_ID.ordinal()));
+            message.write(intToByte(pieceIndex));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return message.toByteArray();
     }
 
 
@@ -46,12 +52,16 @@ public class MessageBuilder {
      * @param length     Integer specifying requested length
      */
     public static byte[] buildRequest(int pieceIndex, int begin, int length) {
-        byte[] message = new byte[4 * intByteLength];
-        System.arraycopy(intToByte(MessageId.REQUEST_ID.ordinal()), 0, message, 0, intByteLength);
-        System.arraycopy(intToByte(pieceIndex), 0, message, intByteLength, intByteLength);
-        System.arraycopy(intToByte(begin), 0, message, intByteLength * 2, intByteLength);
-        System.arraycopy(intToByte(length), 0, message, intByteLength * 3, intByteLength);
-        return message;
+        ByteArrayOutputStream message = new ByteArrayOutputStream();
+        try {
+            message.write(intToByte(MessageId.REQUEST_ID.ordinal()));
+            message.write(intToByte(pieceIndex));
+            message.write(intToByte(begin));
+            message.write(intToByte(length));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return message.toByteArray();
     }
 
     /**
@@ -60,25 +70,32 @@ public class MessageBuilder {
      * @param block      The data
      */
     public static byte[] buildPiece(int pieceIndex, int begin, byte[] block) {
-        byte[] message = new byte[4 * intByteLength + block.length];
-
-        System.arraycopy(intToByte(MessageId.PIECE_ID.ordinal()), 0, message, 0, intByteLength);
-        System.arraycopy(intToByte(pieceIndex), 0, message, intByteLength, intByteLength);
-        System.arraycopy(intToByte(begin), 0, message, intByteLength * 2, intByteLength);
-        System.arraycopy(intToByte(block.length), 0, message, intByteLength * 3, intByteLength);
-        System.arraycopy(block, 0, message, intByteLength * 4, block.length);
-        return message;
+        ByteArrayOutputStream message = new ByteArrayOutputStream();
+        try {
+            message.write(intToByte(MessageId.PIECE_ID.ordinal()));
+            message.write(intToByte(pieceIndex));
+            message.write(intToByte(begin));
+            message.write(intToByte(block.length));
+            message.write(block);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return message.toByteArray();
     }
 
     /**
      * @param bitfield Byte array representing bitfield
      */
     public static byte[] buildBitfield(byte[] bitfield) {
-        byte[] message = new byte[2 * intByteLength + bitfield.length];
-        System.arraycopy(intToByte(MessageId.BITFIELD_ID.ordinal()), 0, message, 0, intByteLength);
-        System.arraycopy(intToByte(bitfield.length), 0, message, intByteLength, intByteLength);
-        System.arraycopy(bitfield, 0, message, intByteLength * 2, bitfield.length);
-        return message;
+        ByteArrayOutputStream message = new ByteArrayOutputStream();
+        try {
+            message.write(intToByte(MessageId.BITFIELD_ID.ordinal()));
+            message.write(intToByte(bitfield.length));
+            message.write(bitfield);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return message.toByteArray();
     }
 
     public static byte[] intToByte(int i) {
