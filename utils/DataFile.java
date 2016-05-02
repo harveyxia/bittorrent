@@ -1,6 +1,5 @@
 package utils;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -12,18 +11,18 @@ public class DataFile {
     private final RandomAccessFile file;
 
     //    public static void main(String[] args) {
-//        try {
-//            RandomAccessFile file = new RandomAccessFile("testfile", "rw");
-//            file.setLength(1000);
-//            file.seek(5);
-//            String s = "hello world!";
-//            file.write(s.getBytes(), 0, s.length());
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    //        try {
+    //            RandomAccessFile file = new RandomAccessFile("testfile", "rw");
+    //            file.setLength(1000);
+    //            file.seek(5);
+    //            String s = "hello world!";
+    //            file.write(s.getBytes(), 0, s.length());
+    //        } catch (FileNotFoundException e) {
+    //            e.printStackTrace();
+    //        } catch (IOException e) {
+    //            e.printStackTrace();
+    //        }
+    //    }
 
     public DataFile(String filename, long length) throws IOException {
         file = new RandomAccessFile(filename, MODE);

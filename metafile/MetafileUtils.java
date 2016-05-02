@@ -20,6 +20,7 @@ public class MetafileUtils {
 
     /**
      * Parse .torrent file.
+     *
      * @param filename The metafile.
      * @return metafile.
      */

@@ -1,9 +1,11 @@
 package tests;
 
-import metafile.*;
+import metafile.Info;
+import metafile.Metafile;
+import metafile.MetafileUtils;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test metafile parsing.

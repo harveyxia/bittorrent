@@ -9,13 +9,13 @@ public class Info {
     private String filename;
     private int pieceLength;
     private long fileLength;
-//    private String[] pieces;    // hash values for each piece, in order
+    //    private String[] pieces;    // hash values for each piece, in order
 
     public Info(String filename, int pieceLength, long fileLength) {
         this.filename = filename;
         this.pieceLength = pieceLength;
         this.fileLength = fileLength;
-//        this.pieces = pieces;
+        //        this.pieces = pieces;
     }
 
     public String getFilename() {
@@ -30,7 +30,7 @@ public class Info {
         return fileLength;
     }
 
-//    public String[] getPieces() {
-//        return pieces;
-//    }
+    //    public String[] getPieces() {
+    //        return pieces;
+    //    }
 }
