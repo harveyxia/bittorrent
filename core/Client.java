@@ -13,7 +13,7 @@ import static tests.MessageParser.getMessageId;
  */
 public class Client {
 
-    private void switchMessage(byte[] message) {
+    private void onReceiveMessage(byte[] message) {
         MessageBuilder.MessageId messageId = getMessageId(message);
         switch (messageId) {
             case CHOKE_ID:
