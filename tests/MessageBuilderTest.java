@@ -5,7 +5,9 @@ import utils.MessageBuilder;
 
 import java.nio.charset.StandardCharsets;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static utils.MessageBuilder.intToByte;
 
 /**
  * Harvey Xia.
@@ -14,38 +16,73 @@ public class MessageBuilderTest {
 
     @Test
     public void testBuildChoke() throws Exception {
-        assertEquals(MessageBuilder.buildChoke(), MessageBuilder.buildChoke());
+        assertArrayEquals(intToByte(MessageBuilder.MessageId.CHOKE_ID.ordinal()), MessageBuilder.buildChoke());
     }
 
     @Test
     public void testBuildInterested() throws Exception {
-        assertEquals("interested:", MessageBuilder.buildInterested());
+        assertArrayEquals(intToByte(MessageBuilder.MessageId.INTERESTED_ID.ordinal()), MessageBuilder.buildInterested());
     }
 
     @Test
     public void testBuildNotInterested() throws Exception {
-        assertEquals("not interested:", MessageBuilder.buildNotInterested());
+        assertArrayEquals(intToByte(MessageBuilder.MessageId.NOT_INTERESTED_ID.ordinal()), MessageBuilder.buildNotInterested());
     }
 
     @Test
     public void testBuildHave() throws Exception {
-        assertEquals("have:12", MessageBuilder.buildHave(12));
+        byte[] haveId = intToByte(MessageBuilder.MessageId.HAVE_ID.ordinal());
+        byte[] pieceIndex = intToByte(12);
+        byte[] message = new byte[haveId.length + pieceIndex.length];
+        System.arraycopy(haveId, 0, message, 0, haveId.length);
+        System.arraycopy(pieceIndex, 0, message, haveId.length, pieceIndex.length);
+        assertArrayEquals(message, MessageBuilder.buildHave(12));
     }
 
     @Test
     public void testBuildRequest() throws Exception {
-        assertEquals("request:1,0,256", MessageBuilder.buildRequest(1, 0, 256));
+        byte[] requestId = intToByte(MessageBuilder.MessageId.REQUEST_ID.ordinal());
+        byte[] pieceIndex = intToByte(12);
+        byte[] begin = intToByte(5);
+        byte[] length = intToByte(256);
+        byte[] message = new byte[requestId.length + pieceIndex.length + begin.length + length.length];
+        System.arraycopy(requestId, 0, message, 0, requestId.length);
+        System.arraycopy(pieceIndex, 0, message, 4, pieceIndex.length);
+        System.arraycopy(begin, 0, message, 8, begin.length);
+        System.arraycopy(length, 0, message, 12, length.length);
+        assertArrayEquals(message, MessageBuilder.buildRequest(12, 5, 256));
     }
 
     @Test
     public void testBuildPiece() throws Exception {
-        String data = "Hello world!";
-        assertEquals("piece:1,0," + data, MessageBuilder.buildPiece(1, 0, data.getBytes(StandardCharsets.UTF_8)));
+        byte[] pieceId = intToByte(MessageBuilder.MessageId.PIECE_ID.ordinal());
+        byte[] pieceIndex = intToByte(12);
+        byte[] begin = intToByte(5);
+        byte[] block = "Hello world!".getBytes(StandardCharsets.UTF_8);
+
+        byte[] blockLength = intToByte(block.length);
+
+        byte[] message = new byte[pieceId.length + pieceIndex.length + begin.length + blockLength.length + block.length];
+
+        System.arraycopy(pieceId, 0, message, 0, pieceId.length);
+        System.arraycopy(pieceIndex, 0, message, 4, pieceIndex.length);
+        System.arraycopy(begin, 0, message, 8, begin.length);
+        System.arraycopy(blockLength, 0, message, 12, blockLength.length);
+        System.arraycopy(block, 0, message, 16, block.length);
+        assertArrayEquals(message, MessageBuilder.buildPiece(12, 5, block));
     }
 
     @Test
     public void testBuildBitfield() throws Exception {
+        byte[] bitfieldId = intToByte(MessageBuilder.MessageId.BITFIELD_ID.ordinal());
         byte[] bitfield = {0, 0, 1, 0, 1, 1};
-        assertEquals("bitfield:" + new String(bitfield, StandardCharsets.UTF_8), MessageBuilder.buildBitfield(bitfield));
+        byte[] bitfieldLength = intToByte(bitfield.length);
+
+        byte[] message = new byte[bitfieldId.length + bitfieldLength.length + bitfield.length];
+
+        System.arraycopy(bitfieldId, 0, message, 0, bitfieldId.length);
+        System.arraycopy(bitfieldLength, 0, message, 4, bitfieldLength.length);
+        System.arraycopy(bitfield, 0, message, 8, bitfield.length);
+        assertArrayEquals(message, MessageBuilder.buildBitfield(bitfield));
     }
 }

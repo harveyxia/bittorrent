@@ -2,6 +2,7 @@ package tests;
 
 import org.junit.Test;
 import utils.MessageBuilder;
+import utils.MessageParser;
 
 import static org.junit.Assert.*;
 

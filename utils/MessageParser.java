@@ -1,6 +1,4 @@
-package tests;
-
-import utils.MessageBuilder;
+package utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,5 +16,17 @@ public class MessageParser {
         byte[] messageId = new byte[MessageBuilder.intByteLength];
         System.arraycopy(message, 0, messageId, 0, MessageBuilder.intByteLength);
         return MessageBuilder.MessageId.values()[byteToInt(messageId)];
+    }
+
+    public static int parseHave(byte[] message) {
+        byte[] pieceIndex = new byte[MessageBuilder.intByteLength];
+        System.arraycopy(message, 0, pieceIndex, MessageBuilder.intByteLength, MessageBuilder.intByteLength);
+        return byteToInt(pieceIndex);
+    }
+
+    public static Bitfield parseBitfield(byte[] message) {
+        byte[] bitfield;
+//        return new Bitfield(bitfield);
+        return null;
     }
 }

@@ -5,13 +5,15 @@ import java.nio.ByteOrder;
 
 /**
  * Build torrent messages.
+ * Encoding: message id : [int fields] : [length in bytes of data : data]
+ * The optional fields are only for Piece and Bitfield messages
  */
 public class MessageBuilder {
 
     public static final int intByteLength = 4; // number of bytes per int
 
     public enum MessageId {
-        CHOKE_ID, INTERESTED_ID, NOT_INTERESTED, HAVE_ID, REQUEST_ID, PIECE_ID, BITFIELD_ID
+        CHOKE_ID, INTERESTED_ID, NOT_INTERESTED_ID, HAVE_ID, REQUEST_ID, PIECE_ID, BITFIELD_ID
     }
 
     public static byte[] buildChoke() {
@@ -23,7 +25,7 @@ public class MessageBuilder {
     }
 
     public static byte[] buildNotInterested() {
-        return intToByte(MessageId.NOT_INTERESTED.ordinal());
+        return intToByte(MessageId.NOT_INTERESTED_ID.ordinal());
     }
 
 
@@ -58,11 +60,13 @@ public class MessageBuilder {
      * @param block      The data
      */
     public static byte[] buildPiece(int pieceIndex, int begin, byte[] block) {
-        byte[] message = new byte[3 * intByteLength + block.length];
+        byte[] message = new byte[4 * intByteLength + block.length];
+
         System.arraycopy(intToByte(MessageId.PIECE_ID.ordinal()), 0, message, 0, intByteLength);
         System.arraycopy(intToByte(pieceIndex), 0, message, intByteLength, intByteLength);
         System.arraycopy(intToByte(begin), 0, message, intByteLength * 2, intByteLength);
-        System.arraycopy(block, 0, message, intByteLength * 3, block.length);
+        System.arraycopy(intToByte(block.length), 0, message, intByteLength * 3, intByteLength);
+        System.arraycopy(block, 0, message, intByteLength * 4, block.length);
         return message;
     }
 
@@ -70,13 +74,14 @@ public class MessageBuilder {
      * @param bitfield Byte array representing bitfield
      */
     public static byte[] buildBitfield(byte[] bitfield) {
-        byte[] message = new byte[intByteLength + bitfield.length];
+        byte[] message = new byte[2 * intByteLength + bitfield.length];
         System.arraycopy(intToByte(MessageId.BITFIELD_ID.ordinal()), 0, message, 0, intByteLength);
-        System.arraycopy(bitfield, 0, message, intByteLength, bitfield.length);
+        System.arraycopy(intToByte(bitfield.length), 0, message, intByteLength, intByteLength);
+        System.arraycopy(bitfield, 0, message, intByteLength * 2, bitfield.length);
         return message;
     }
 
-    private static byte[] intToByte(int i) {
+    public static byte[] intToByte(int i) {
         ByteBuffer b = ByteBuffer.allocate(intByteLength);
         b.order(ByteOrder.BIG_ENDIAN);
         b.putInt(i);

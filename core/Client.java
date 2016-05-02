@@ -6,7 +6,7 @@ import utils.MessageBuilder;
 import java.net.Inet4Address;
 import java.util.HashMap;
 
-import static tests.MessageParser.getMessageId;
+import static utils.MessageParser.getMessageId;
 
 /**
  * Bittorrent client.
@@ -20,7 +20,7 @@ public class Client {
                 break;
             case INTERESTED_ID:
                 break;
-            case NOT_INTERESTED:
+            case NOT_INTERESTED_ID:
                 break;
             case HAVE_ID:
                 break;
