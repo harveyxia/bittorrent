@@ -19,13 +19,18 @@ public class Client {
     public static void main(String[] argv) {
     }
 
+    public void listen() {
+        // TODO: start server socket thread listening for peer connections
+    }
+
     public Inet4Address[] getPeers() {
         // TODO: get peer list from tracker
         return new Inet4Address[0];
     }
 
     public void connectPeer(Inet4Address peer) {
-        // TODO: connect with peer
+        // TODO: setup TCP connection with peer
+        // TODO: send desired filename
     }
 
     public void sendHave(Inet4Address peer) {
