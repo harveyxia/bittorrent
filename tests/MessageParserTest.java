@@ -3,6 +3,8 @@ package tests;
 import message.*;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -14,26 +16,26 @@ import static org.junit.Assert.assertEquals;
 public class MessageParserTest {
 
     @Test
-    public void testGetMessageId() throws Exception {
-        byte[] bitfield = {0, 1, 0, 1};
-        byte[] message = MessageBuilder.buildBitfield(bitfield);
-        assertEquals(MessageBuilder.MessageId.BITFIELD_ID, MessageParser.getMessageId(message));
-    }
-
-    @Test
     public void testParseHave() throws Exception {
         byte[] requestMessage = MessageBuilder.buildHave(12);
-        assertEquals(12, MessageParser.parseHave(requestMessage));
+        InputStream is = new ByteArrayInputStream(requestMessage);
+        assertEquals(Message.MessageID.HAVE_ID.ordinal(), MessageParser.readIntFromStream(is));
+        Message message = MessageParser.parseHave(is);
+        assertEquals(12, message.getPieceIndex());
     }
 
     @Test
     public void testParseRequest() throws Exception {
         Request expectedRequest = new Request(1, 2, 3);
         byte[] requestMessage = MessageBuilder.buildRequest(1, 2, 3);
-        Request request = MessageParser.parseRequest(requestMessage);
-        assertEquals(expectedRequest.getPieceIndex(), request.getPieceIndex());
-        assertEquals(expectedRequest.getBegin(), request.getBegin());
-        assertEquals(expectedRequest.getLength(), request.getLength());
+
+        InputStream is = new ByteArrayInputStream(requestMessage);
+        assertEquals(Message.MessageID.REQUEST_ID.ordinal(), MessageParser.readIntFromStream(is));
+        Message message = MessageParser.parseRequest(is);
+
+        assertEquals(expectedRequest.getPieceIndex(), message.getRequest().getPieceIndex());
+        assertEquals(expectedRequest.getBegin(), message.getRequest().getBegin());
+        assertEquals(expectedRequest.getLength(), message.getRequest().getLength());
     }
 
     @Test
@@ -41,10 +43,14 @@ public class MessageParserTest {
         byte[] block = "hello world!".getBytes(StandardCharsets.UTF_8);
         Piece expectedPiece = new Piece(1, 2, block);
         byte[] requestMessage = MessageBuilder.buildPiece(1, 2, block);
-        Piece piece = MessageParser.parsePiece(requestMessage);
-        assertEquals(expectedPiece.getPieceIndex(), piece.getPieceIndex());
-        assertEquals(expectedPiece.getBegin(), piece.getBegin());
-        assertArrayEquals(expectedPiece.getBlock(), piece.getBlock());
+
+        InputStream is = new ByteArrayInputStream(requestMessage);
+        assertEquals(Message.MessageID.PIECE_ID.ordinal(), MessageParser.readIntFromStream(is));
+        Message message = MessageParser.parsePiece(is);
+
+        assertEquals(expectedPiece.getPieceIndex(), message.getPiece().getPieceIndex());
+        assertEquals(expectedPiece.getBegin(), message.getPiece().getBegin());
+        assertArrayEquals(expectedPiece.getBlock(), message.getPiece().getBlock());
     }
 
     @Test
@@ -52,14 +58,20 @@ public class MessageParserTest {
         byte[] bitfieldArray = {1, 0, 1, 0, 1};
         Bitfield expectedBitfield = new Bitfield(bitfieldArray);
         byte[] requestMessage = MessageBuilder.buildBitfield(bitfieldArray);
-        Bitfield bitfield = MessageParser.parseBitfield(requestMessage);
-        assertArrayEquals(bitfield.getBitfield(), expectedBitfield.getBitfield());
+
+        InputStream is = new ByteArrayInputStream(requestMessage);
+        assertEquals(Message.MessageID.BITFIELD_ID.ordinal(), MessageParser.readIntFromStream(is));
+        Message message = MessageParser.parseBitfield(is);
+        assertArrayEquals(expectedBitfield.getBitfield(), message.getBitfield().getBitfield());
     }
 
     @Test
     public void testParseHandshake() throws Exception {
         String filename = "filename.txt";
         byte[] requestMessage = MessageBuilder.buildHandshake(filename);
-        assertEquals(filename, MessageParser.parseHandshake(requestMessage));
+        InputStream is = new ByteArrayInputStream(requestMessage);
+        assertEquals(Message.MessageID.HANDSHAKE_ID.ordinal(), MessageParser.readIntFromStream(is));
+        Message actual = MessageParser.parseHandshake(is);
+        assertEquals(filename, actual.getFilename());
     }
 }

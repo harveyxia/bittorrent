@@ -1,5 +1,6 @@
 package tests;
 
+import message.Message;
 import org.junit.Test;
 import message.MessageBuilder;
 
@@ -16,22 +17,22 @@ public class MessageBuilderTest {
 
     @Test
     public void testBuildChoke() throws Exception {
-        assertArrayEquals(intToByte(MessageBuilder.MessageId.CHOKE_ID.ordinal()), MessageBuilder.buildChoke());
+        assertArrayEquals(intToByte(Message.MessageID.CHOKE_ID.ordinal()), MessageBuilder.buildChoke());
     }
 
     @Test
     public void testBuildInterested() throws Exception {
-        assertArrayEquals(intToByte(MessageBuilder.MessageId.INTERESTED_ID.ordinal()), MessageBuilder.buildInterested());
+        assertArrayEquals(intToByte(Message.MessageID.INTERESTED_ID.ordinal()), MessageBuilder.buildInterested());
     }
 
     @Test
     public void testBuildNotInterested() throws Exception {
-        assertArrayEquals(intToByte(MessageBuilder.MessageId.NOT_INTERESTED_ID.ordinal()), MessageBuilder.buildNotInterested());
+        assertArrayEquals(intToByte(Message.MessageID.NOT_INTERESTED_ID.ordinal()), MessageBuilder.buildNotInterested());
     }
 
     @Test
     public void testBuildHave() throws Exception {
-        byte[] haveId = intToByte(MessageBuilder.MessageId.HAVE_ID.ordinal());
+        byte[] haveId = intToByte(Message.MessageID.HAVE_ID.ordinal());
         byte[] pieceIndex = intToByte(12);
         byte[] message = new byte[haveId.length + pieceIndex.length];
         System.arraycopy(haveId, 0, message, 0, haveId.length);
@@ -41,7 +42,7 @@ public class MessageBuilderTest {
 
     @Test
     public void testBuildRequest() throws Exception {
-        byte[] requestId = intToByte(MessageBuilder.MessageId.REQUEST_ID.ordinal());
+        byte[] requestId = intToByte(Message.MessageID.REQUEST_ID.ordinal());
         byte[] pieceIndex = intToByte(12);
         byte[] begin = intToByte(5);
         byte[] length = intToByte(256);
@@ -55,7 +56,7 @@ public class MessageBuilderTest {
 
     @Test
     public void testBuildPiece() throws Exception {
-        byte[] pieceId = intToByte(MessageBuilder.MessageId.PIECE_ID.ordinal());
+        byte[] pieceId = intToByte(Message.MessageID.PIECE_ID.ordinal());
         byte[] pieceIndex = intToByte(12);
         byte[] begin = intToByte(5);
         byte[] block = "Hello world!".getBytes(StandardCharsets.UTF_8);
@@ -74,7 +75,7 @@ public class MessageBuilderTest {
 
     @Test
     public void testBuildBitfield() throws Exception {
-        byte[] bitfieldId = intToByte(MessageBuilder.MessageId.BITFIELD_ID.ordinal());
+        byte[] bitfieldId = intToByte(Message.MessageID.BITFIELD_ID.ordinal());
         byte[] bitfield = {0, 0, 1, 0, 1, 1};
         byte[] bitfieldLength = intToByte(bitfield.length);
 
