@@ -26,7 +26,7 @@ public class Tracker {
                 InputStream in = socket.getInputStream();
                 TrackerRequest req = TrackerRequest.fromStream(in);
                 // process it
-                TrackerResponse resp = null; // should actually do something
+                TrackerResponse resp = null; // TODO: should actually do something
                 resp.send(out);
             }
         }
