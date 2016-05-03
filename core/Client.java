@@ -1,11 +1,14 @@
 package core;
 
-import utils.DataFile;
 import message.MessageBuilder;
+import utils.DataFile;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static message.MessageParser.getMessageId;
 
@@ -15,26 +18,56 @@ import static message.MessageParser.getMessageId;
 public class Client {
 
     private static final int BACKLOG = 10;
-    private static final int CLIENT_PORT = 200;
-    private static final int SERVER_PORT = 6789;
-    private HashMap<Inet4Address, ConnectionState> connectionStates;
-    private HashMap<Inet4Address, Socket> connections;
+    private static final String CMD_USAGE = "java Client clientName clientPort serverPort";
+    public static final int NUM_THREADS = 2;
 
-    public Client() {
-        this.connectionStates = new HashMap<>();
-        this.connections = new HashMap<>();
+    private HashMap<Inet4Address, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
+    private HashMap<Inet4Address, Socket> connections;                  // maintain TCP state of each p2p connection
+    private HashSet<Inet4Address> peers;                                // list of all peers
+    private int clientPort;
+    private int listenPort;
+    private String clientName;
+
+    public static void main(String[] args) {
+        if (args.length != 3) {
+            System.out.println(CMD_USAGE);
+            return;
+        }
+        int clientPort = Integer.parseInt(args[1]);
+        int listenPort = Integer.parseInt(args[2]);
+        Client client = new Client(args[0], clientPort, listenPort);
+        Thread listenThread = client.getListenThread();
+        Thread downloadThread = client.getDownloadThread("fileId", "trackerUrl");
+        ExecutorService service = Executors.newFixedThreadPool(NUM_THREADS);
+        service.submit(listenThread);
+        service.submit(downloadThread);
     }
 
-    public void listen() {
-        // TODO: start server socket thread listening for peer connections
-        try (ServerSocket socket = new ServerSocket(SERVER_PORT, BACKLOG)) {
+    public Client(String clientName, int clientPort, int listenPort) {
+        this.connectionStates = new HashMap<>();
+        this.connections = new HashMap<>();
+        this.clientName = clientName;
+        this.clientPort = clientPort;
+        this.listenPort = listenPort;
+        logOutput("listening on port " + listenPort);
+        logOutput("downloading on port " + clientPort);
+    }
+
+    /**
+     * Listen for incoming client connections.
+     */
+    public Thread getListenThread() {
+        Thread serverThread = null;
+        try {
+            ServerSocket socket = new ServerSocket(listenPort, BACKLOG);
             // Run server thread
-            Thread serverThread = new Thread(new Runnable() {
+            serverThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     while (true) {
                         // Accept peer connections
                         try (Socket peer = socket.accept()) {
+                            logOutput("accepted new connection from " + peer.getInetAddress() + " at port " + peer.getPort());
                             connections.put((Inet4Address) peer.getInetAddress(), peer);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -46,10 +79,33 @@ public class Client {
                     }
                 }
             });
-            serverThread.run();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return serverThread;
+    }
+
+    /**
+     * Download a file by contacting tracker and connecting to peers.
+     */
+    public Thread getDownloadThread(String fileId, String trackerUrl) {
+        Thread downloadThread;
+        downloadThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // 1. contact tracker
+                // 2. connect to peers
+                try {
+                    logOutput("getDownloadThread thread running");
+                    Inet4Address address = (Inet4Address) Inet4Address.getLocalHost();
+                    int port = 7000;
+                    connect(address, port);
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        return downloadThread;
     }
 
     public Inet4Address[] getPeers() {
@@ -57,18 +113,10 @@ public class Client {
         return new Inet4Address[0];
     }
 
-    public void connect(Inet4Address peer) {
-        // TODO: setup TCP connection with peer
-        Inet4Address localAddr;
-
+    public void connect(Inet4Address peer, int port) {
         try {
-            localAddr = (Inet4Address) InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        try (Socket socket = new Socket(peer, SERVER_PORT, localAddr, CLIENT_PORT)) {
+            logOutput("connecting to " + peer + " at port " + port);
+            Socket socket = new Socket(peer, port, InetAddress.getLocalHost(), clientPort);
             connectionStates.put(peer, ConnectionState.getInitialState());
             // TODO: send desired filename
         } catch (IOException e) {
@@ -124,5 +172,9 @@ public class Client {
 
     // TODO: do we need this if not implementing end-game behavior?
     public void sendCancel(Inet4Address peer) {
+    }
+
+    private void logOutput(String s) {
+        System.out.println("Client " + clientName + ": " + s);
     }
 }
