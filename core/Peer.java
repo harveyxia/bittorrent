@@ -1,25 +1,19 @@
 package core;
 
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 /**
  * Created by marvin on 5/2/16.
  */
 public class Peer {
 
-    private InetAddress ip;
-    private int port;
+    private InetSocketAddress addr;
 
-    public Peer(InetAddress ip, int port) {
-        this.ip = ip;
-        this.port = port;
+    public Peer(InetSocketAddress addr) {
+        this.addr = addr;
     }
 
-    public InetAddress getIp() {
-        return ip;
-    }
-
-    public int getPort() {
-        return port;
+    public InetSocketAddress getAddr() {
+        return addr;
     }
 }

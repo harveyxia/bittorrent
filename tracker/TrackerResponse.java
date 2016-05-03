@@ -4,6 +4,7 @@ import core.Peer;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,23 @@ public class TrackerResponse {
     private int interval, seeders, leechers;
     private List<Peer> peers;
 
+    public static TrackerResponse fromStream(InputStream in) throws IOException {
+
+        DataInputStream dis = new DataInputStream(in);
+        int interval = dis.readInt();
+        int seeders = dis.readInt();
+        int leechers = dis.readInt();
+        List<Peer> peers = new ArrayList<>();
+        byte[] raw = new byte[4];
+        for (int i = 0; i < seeders + leechers; i++) {
+            dis.read(raw);
+            InetAddress ip = InetAddress.getByAddress(raw);
+            int port = dis.readInt();
+            peers.add(new Peer(new InetSocketAddress(ip, port)));
+        }
+        return new TrackerResponse(interval, seeders, leechers, peers);
+    }
+
     public TrackerResponse(int interval, int seeders, int leechers, List<Peer> peers) {
         this.interval = interval;
         this.seeders = seeders;
@@ -23,35 +41,16 @@ public class TrackerResponse {
         this.peers = peers;
     }
 
-    public TrackerResponse(byte[] msg) throws IOException {
+    public void send(OutputStream out) throws IOException {
 
-        ByteArrayInputStream bais = new ByteArrayInputStream(msg);
-        DataInputStream is = new DataInputStream(bais);
-        interval = is.readInt();
-        seeders = is.readInt();
-        leechers = is.readInt();
-        peers = new ArrayList<>();
-        byte[] raw = new byte[4];
-        for (int i = 0; i < seeders + leechers; i++) {
-            is.read(raw);
-            InetAddress ip = InetAddress.getByAddress(raw);
-            int port = is.readInt();
-            peers.add(new Peer(ip, port));
-        }
-    }
-
-    public byte[] pack() throws IOException {
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DataOutputStream os = new DataOutputStream(baos);
-        os.writeInt(interval);
-        os.writeInt(seeders);
-        os.writeInt(leechers);
+        DataOutputStream dos = new DataOutputStream(out);
+        dos.writeInt(interval);
+        dos.writeInt(seeders);
+        dos.writeInt(leechers);
         for (Peer p : peers) {
-            os.write(p.getIp().getAddress());
-            os.writeInt(p.getPort());
+            dos.write(p.getAddr().getAddress().getAddress());
+            dos.writeInt(p.getAddr().getPort());
         }
-        return baos.toByteArray();
     }
 
     public int getInterval() {
