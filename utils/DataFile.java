@@ -7,8 +7,13 @@ import java.io.RandomAccessFile;
  * Wrapper around in-progress torrent data files.
  */
 public class DataFile {
+    public static final int PIECES = 2048;
+    public static final int PIECE_LENGTH = 512000;
     public static final String MODE = "rw";
     private final RandomAccessFile file;
+    private byte[] bitField;
+
+    // TODO: send pieces in blocks (and maintain internal bitfield with block-granularity?)
 
     //    public static void main(String[] args) {
     //        try {
@@ -27,6 +32,7 @@ public class DataFile {
     public DataFile(String filename, long length) throws IOException {
         file = new RandomAccessFile(filename, MODE);
         file.setLength(length);
+        bitField = new byte[PIECES];
     }
 
     public void writeAt(byte[] data, long pos) throws IOException {
