@@ -17,6 +17,9 @@ public class ConnectionState {
         this.peerInterested = peerInterested;
     }
 
+    public static ConnectionState getInitialState() {
+        return new ConnectionState(true, false, true, false);
+    }
 
     public boolean isAmChoking() {
         return amChoking;
