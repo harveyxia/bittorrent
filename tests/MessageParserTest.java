@@ -55,4 +55,11 @@ public class MessageParserTest {
         Bitfield bitfield = MessageParser.parseBitfield(requestMessage);
         assertArrayEquals(bitfield.getBitfield(), expectedBitfield.getBitfield());
     }
+
+    @Test
+    public void testParseHandshake() throws Exception {
+        String filename = "filename.txt";
+        byte[] requestMessage = MessageBuilder.buildHandshake(filename);
+        assertEquals(filename, MessageParser.parseHandshake(requestMessage));
+    }
 }
