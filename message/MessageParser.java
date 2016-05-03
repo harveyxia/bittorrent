@@ -3,6 +3,7 @@ package message;
 import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Parses client to client messages.
@@ -21,6 +22,17 @@ public class MessageParser {
         input.skip(MessageBuilder.intByteLength);
         input.read(pieceIndex, 0, MessageBuilder.intByteLength);
         return byteToInt(pieceIndex);
+    }
+
+    public static String parseHandshake(byte[] message) {
+        ByteArrayInputStream input = new ByteArrayInputStream(message);
+        input.skip(MessageBuilder.intByteLength);
+        byte[] filenameLengthArray = new byte[MessageBuilder.intByteLength];
+        input.read(filenameLengthArray, 0, MessageBuilder.intByteLength);
+        int filenameLength = byteToInt(filenameLengthArray);
+        byte[] filenameArray = new byte[filenameLength];
+        input.read(filenameArray, 0, filenameLength);
+        return new String(filenameArray, StandardCharsets.UTF_8);
     }
 
     public static Request parseRequest(byte[] message) {
