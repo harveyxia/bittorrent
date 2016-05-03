@@ -5,20 +5,22 @@ package core;
  */
 public class ConnectionState {
 
+    private boolean established;
     private boolean amChoking;
     private boolean amInterested;
     private boolean peerChoking;
     private boolean peerInterested;
 
-    public ConnectionState(boolean amChoking, boolean amInterested, boolean peerChoking, boolean peerInterested) {
+    public ConnectionState(boolean amChoking, boolean amInterested, boolean peerChoking, boolean peerInterested, boolean established) {
         this.amChoking = amChoking;
         this.amInterested = amInterested;
         this.peerChoking = peerChoking;
         this.peerInterested = peerInterested;
+        this.established = established;
     }
 
     public static ConnectionState getInitialState() {
-        return new ConnectionState(true, false, true, false);
+        return new ConnectionState(true, false, true, false, false);
     }
 
     public boolean isAmChoking() {
@@ -51,5 +53,13 @@ public class ConnectionState {
 
     public void setPeerInterested(boolean peerInterested) {
         this.peerInterested = peerInterested;
+    }
+
+    public boolean isEstablished() {
+        return established;
+    }
+
+    public void setEstablished(boolean established) {
+        this.established = established;
     }
 }

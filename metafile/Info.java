@@ -24,7 +24,7 @@ public class Info {
 
     public int getPieceLength() {
         return pieceLength;
-    }
+    }w
 
     public long getFileLength() {
         return fileLength;

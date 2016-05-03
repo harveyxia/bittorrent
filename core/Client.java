@@ -24,6 +24,7 @@ public class Client {
 
     private HashMap<Peer, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
     private HashMap<Peer, Socket> connections;                  // maintain TCP state of each p2p connection
+    private HashMap<String, DataFile> files;                    // maintain map of filenames to files
     private HashSet<Peer> peers;                                // list of all peers
     private int clientPort;
     private int listenPort;
@@ -74,9 +75,18 @@ public class Client {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+
                         // Process any new messages
-                        for (Socket peer : connections.values()) {
-                            // TODO: process messages
+                        for (Peer peer : peers) {
+                            ConnectionState state = connectionStates.get(peer);
+                            if (state == null) continue;
+
+                            if (state.isEstablished()) {        // Piece exchange
+                                // Piece exchange
+                            } else {                            // Handshake
+                                // 1. Receive handshake message
+                                // 2. Send handshake message
+                            }
                         }
                     }
                 }
@@ -152,7 +162,7 @@ public class Client {
     public void sendPiece(Inet4Address peer, DataFile file, int index, int begin, int length) {
     }
 
-    // TODO: do we need this if not implementing end-game behavior?
+    // TODO: do we need this if we're not implementing end-game behavior?
     public void sendCancel(Inet4Address peer) {
     }
 
