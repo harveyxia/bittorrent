@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Build torrent messages.
@@ -15,7 +16,7 @@ public class MessageBuilder {
     public static final int intByteLength = 4; // number of bytes per int
 
     public enum MessageId {
-        CHOKE_ID, INTERESTED_ID, NOT_INTERESTED_ID, HAVE_ID, REQUEST_ID, PIECE_ID, BITFIELD_ID
+        CHOKE_ID, INTERESTED_ID, NOT_INTERESTED_ID, HAVE_ID, REQUEST_ID, PIECE_ID, BITFIELD_ID, HANDSHAKE_ID
     }
 
     public static byte[] buildChoke() {
@@ -30,6 +31,22 @@ public class MessageBuilder {
         return intToByte(MessageId.NOT_INTERESTED_ID.ordinal());
     }
 
+    /**
+     * Format: [HANDSHAKE_ID, FILENAME LENGTH, FILENAME]
+     * @param filename The filename.
+     */
+    public static byte[] buildHandshake(String filename) {
+        ByteArrayOutputStream message = new ByteArrayOutputStream();
+        byte[] filenameBytes = filename.getBytes(StandardCharsets.UTF_8);
+        try {
+            message.write(intToByte(MessageId.HANDSHAKE_ID.ordinal()));
+            message.write(intToByte(filenameBytes.length));
+            message.write(filenameBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return message.toByteArray();
+    }
 
     /**
      * @param pieceIndex zero-based index of a piece that is downloaded and verified
