@@ -4,7 +4,10 @@ import message.MessageBuilder;
 import utils.DataFile;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
@@ -21,9 +24,9 @@ public class Client {
     private static final String CMD_USAGE = "java Client clientName clientPort serverPort";
     public static final int NUM_THREADS = 2;
 
-    private HashMap<Inet4Address, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
-    private HashMap<Inet4Address, Socket> connections;                  // maintain TCP state of each p2p connection
-    private HashSet<Inet4Address> peers;                                // list of all peers
+    private HashMap<Peer, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
+    private HashMap<Peer, Socket> connections;                  // maintain TCP state of each p2p connection
+    private HashSet<Peer> peers;                                // list of all peers
     private int clientPort;
     private int listenPort;
     private String clientName;
@@ -68,7 +71,7 @@ public class Client {
                         // Accept peer connections
                         try (Socket peer = socket.accept()) {
                             logOutput("accepted new connection from " + peer.getInetAddress() + " at port " + peer.getPort());
-                            connections.put((Inet4Address) peer.getInetAddress(), peer);
+                            connections.put(new Peer(peer.getInetAddress(), peer.getPort()), peer);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -95,14 +98,6 @@ public class Client {
             public void run() {
                 // 1. contact tracker
                 // 2. connect to peers
-                try {
-                    logOutput("getDownloadThread thread running");
-                    Inet4Address address = (Inet4Address) Inet4Address.getLocalHost();
-                    int port = 7000;
-                    connect(address, port);
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
             }
         });
         return downloadThread;
@@ -113,10 +108,10 @@ public class Client {
         return new Inet4Address[0];
     }
 
-    public void connect(Inet4Address peer, int port) {
+    public void connect(Peer peer) {
         try {
-            logOutput("connecting to " + peer + " at port " + port);
-            Socket socket = new Socket(peer, port, InetAddress.getLocalHost(), clientPort);
+            logOutput("connecting to " + peer.getIp() + " at port " + peer.getPort());
+            Socket socket = new Socket(peer.getIp(), peer.getPort(), InetAddress.getLocalHost(), clientPort);
             connectionStates.put(peer, ConnectionState.getInitialState());
             // TODO: send desired filename
         } catch (IOException e) {
