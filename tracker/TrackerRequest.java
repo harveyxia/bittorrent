@@ -2,6 +2,7 @@ package tracker;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -15,14 +16,12 @@ public class TrackerRequest {
         COMPLETED
     }
     private Event event;
-    private InetAddress ip;
-    private int port;
+    private InetSocketAddress addr;
     private String filename;
 
-    public TrackerRequest(Event event, InetAddress ip, int port, String filename) {
+    public TrackerRequest(Event event, InetSocketAddress addr, String filename) {
         this.event = event;
-        this.ip = ip;
-        this.port = port;
+        this.addr = addr;
         this.filename = filename;
     }
 
@@ -33,8 +32,9 @@ public class TrackerRequest {
         event = Event.values()[is.readShort()];
         byte[] raw = new byte[4];
         is.read(raw);
-        ip = InetAddress.getByAddress(raw);
-        port = is.readInt();
+        InetAddress ip = InetAddress.getByAddress(raw);
+        int port = is.readInt();
+        addr = new InetSocketAddress(ip, port);
         int length = is.readInt();
         byte[] fileRaw = new byte[length];
         is.read(fileRaw);
@@ -46,8 +46,8 @@ public class TrackerRequest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream os = new DataOutputStream(baos);
         os.writeShort(event.ordinal());
-        os.write(ip.getAddress());
-        os.writeInt(port);
+        os.write(addr.getAddress().getAddress());
+        os.writeInt(addr.getPort());
         os.writeInt(filename.length());
         os.writeBytes(filename);
         return baos.toByteArray();
