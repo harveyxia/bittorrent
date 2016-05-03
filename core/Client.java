@@ -13,8 +13,6 @@ import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static message.MessageParser.getMessageId;
-
 /**
  * Bittorrent client.
  */
@@ -70,9 +68,10 @@ public class Client {
                 public void run() {
                     while (true) {
                         // Accept peer connections
-                        try (Socket peer = socket.accept()) {
-                            logOutput("accepted new connection from " + peer.getInetAddress() + " at port " + peer.getPort());
-                            connections.put(new Peer(peer.getInetAddress(), peer.getPort()), peer);
+                        try (Socket inConn = socket.accept()) {
+                            logOutput("accepted new connection from " + inConn.getInetAddress() + " at port " + inConn.getPort());
+                            Peer peer = new Peer(inConn.getInetAddress(), inConn.getPort());
+                            connections.put(peer, inConn);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -107,7 +106,14 @@ public class Client {
             @Override
             public void run() {
                 // 1. contact tracker
-                // 2. connect to peers
+                // 2. handshake peers
+                // 3. event loop for each out going connection
+                while (true) {
+                    for (Peer peer : connectionStates.keySet()) {
+                        // Determine action based on state
+                        // Send message
+                    }
+                }
             }
         });
         return downloadThread;
@@ -118,35 +124,16 @@ public class Client {
         return new Inet4Address[0];
     }
 
-    public void connect(Peer peer) {
+    public void handshake(Peer peer, String filename) {
         try {
             logOutput("connecting to " + peer.getIp() + " at port " + peer.getPort());
             Socket socket = new Socket(peer.getIp(), peer.getPort(), InetAddress.getLocalHost(), clientPort);
             connectionStates.put(peer, ConnectionState.getInitialState());
-            // TODO: send desired filename
+            // 1. send handshake
+            byte[] handshakeMessage = MessageBuilder.buildHandshake(filename);
+            socket.getOutputStream().write(handshakeMessage);
         } catch (IOException e) {
             e.printStackTrace();
-            return;
-        }
-    }
-
-    private void onReceiveMessage(byte[] message) {
-        MessageBuilder.MessageId messageId = getMessageId(message);
-        switch (messageId) {
-            case CHOKE_ID:
-                break;
-            case INTERESTED_ID:
-                break;
-            case NOT_INTERESTED_ID:
-                break;
-            case HAVE_ID:
-                break;
-            case REQUEST_ID:
-                break;
-            case PIECE_ID:
-                break;
-            case BITFIELD_ID:
-                break;
         }
     }
 

@@ -1,47 +1,75 @@
 package message;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+
+import static message.Message.MessageID.values;
 
 /**
  * Parses client to client messages.
  */
 public class MessageParser {
 
-    public static MessageBuilder.MessageId getMessageId(byte[] message) {
-        byte[] messageId = new byte[MessageBuilder.intByteLength];
-        System.arraycopy(message, 0, messageId, 0, MessageBuilder.intByteLength);
-        return MessageBuilder.MessageId.values()[byteToInt(messageId)];
+    public static Message parseMessage(InputStream inputStream) {
+        Message message = null;
+        int messageIdInt = readIntFromStream(inputStream);
+        Message.MessageID messageId = values()[messageIdInt];
+        try {
+            switch (messageId) {
+                case CHOKE_ID:
+                    message = new Message(messageId);
+                    break;
+                case INTERESTED_ID:
+                    message = new Message(messageId);
+                    break;
+                case NOT_INTERESTED_ID:
+                    message = new Message(messageId);
+                    break;
+                case HAVE_ID:
+                    message = parseHave(inputStream);
+                    break;
+                case REQUEST_ID:
+                    message = parseRequest(inputStream);
+                    break;
+                case PIECE_ID:
+                    message = parsePiece(inputStream);
+                    break;
+                case BITFIELD_ID:
+                    message = parseBitfield(inputStream);
+                    break;
+                case HANDSHAKE_ID:
+                    message = parseHandshake(inputStream);
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return message;
     }
 
-    public static int parseHave(byte[] message) {
-        byte[] pieceIndex = new byte[MessageBuilder.intByteLength];
-        ByteArrayInputStream input = new ByteArrayInputStream(message);
-        input.skip(MessageBuilder.intByteLength);
-        input.read(pieceIndex, 0, MessageBuilder.intByteLength);
-        return byteToInt(pieceIndex);
+    public static Message parseHave(InputStream inputStream) throws IOException {
+        int pieceIndex = readIntFromStream(inputStream);
+        return new Message(Message.MessageID.HAVE_ID, pieceIndex);
     }
 
-    public static String parseHandshake(byte[] message) {
-        ByteArrayInputStream input = new ByteArrayInputStream(message);
-        input.skip(MessageBuilder.intByteLength);
+    public static Message parseHandshake(InputStream input) throws IOException {
         byte[] filenameLengthArray = new byte[MessageBuilder.intByteLength];
         input.read(filenameLengthArray, 0, MessageBuilder.intByteLength);
         int filenameLength = byteToInt(filenameLengthArray);
         byte[] filenameArray = new byte[filenameLength];
         input.read(filenameArray, 0, filenameLength);
-        return new String(filenameArray, StandardCharsets.UTF_8);
+        String filename = new String(filenameArray, StandardCharsets.UTF_8);
+        return new Message(Message.MessageID.HANDSHAKE_ID, filename);
     }
 
-    public static Request parseRequest(byte[] message) {
-        ByteArrayInputStream input = new ByteArrayInputStream(message);
+    public static Message parseRequest(InputStream input) throws IOException {
         byte[] pieceIndexArray = new byte[MessageBuilder.intByteLength];
         byte[] beginArray = new byte[MessageBuilder.intByteLength];
         byte[] lengthArray = new byte[MessageBuilder.intByteLength];
 
-        input.skip(MessageBuilder.intByteLength);
         input.read(pieceIndexArray, 0, MessageBuilder.intByteLength);
         input.read(beginArray, 0, MessageBuilder.intByteLength);
         input.read(lengthArray, 0, MessageBuilder.intByteLength);
@@ -49,16 +77,15 @@ public class MessageParser {
         int pieceIndex = byteToInt(pieceIndexArray);
         int begin = byteToInt(beginArray);
         int length = byteToInt(lengthArray);
-        return new Request(pieceIndex, begin, length);
+        Request request = new Request(pieceIndex, begin, length);
+        return new Message(Message.MessageID.REQUEST_ID, request);
     }
 
-    public static Piece parsePiece(byte[] message) {
-        ByteArrayInputStream input = new ByteArrayInputStream(message);
+    public static Message parsePiece(InputStream input) throws IOException {
         byte[] pieceIndexArray = new byte[MessageBuilder.intByteLength];
         byte[] beginArray = new byte[MessageBuilder.intByteLength];
         byte[] blockLengthArray = new byte[MessageBuilder.intByteLength];
 
-        input.skip(MessageBuilder.intByteLength);
         input.read(pieceIndexArray, 0, MessageBuilder.intByteLength);
         input.read(beginArray, 0, MessageBuilder.intByteLength);
         input.read(blockLengthArray, 0, MessageBuilder.intByteLength);
@@ -68,22 +95,33 @@ public class MessageParser {
         int blockLength = byteToInt(blockLengthArray);
         byte[] block = new byte[blockLength];
         input.read(block, 0, blockLength);
-        return new Piece(pieceIndex, begin, block);
+        Piece piece = new Piece(pieceIndex, begin, block);
+        return new Message(Message.MessageID.PIECE_ID, piece);
     }
 
-    public static Bitfield parseBitfield(byte[] message) {
-        ByteArrayInputStream input = new ByteArrayInputStream(message);
+    public static Message parseBitfield(InputStream input) throws IOException {
         byte[] bitfieldLengthArray = new byte[MessageBuilder.intByteLength];
-        input.skip(MessageBuilder.intByteLength);
         input.read(bitfieldLengthArray, 0, MessageBuilder.intByteLength);
         int bitfieldLength = byteToInt(bitfieldLengthArray);
 
-        byte[] bitfield = new byte[bitfieldLength];
-        input.read(bitfield, 0, bitfieldLength);
-        return new Bitfield(bitfield);
+        byte[] bitfieldArray = new byte[bitfieldLength];
+        input.read(bitfieldArray, 0, bitfieldLength);
+        Bitfield bitfield = new Bitfield(bitfieldArray);
+        return new Message(Message.MessageID.BITFIELD_ID, bitfield);
     }
 
-    private static int byteToInt(byte[] bytes) {
+    public static int byteToInt(byte[] bytes) {
         return ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).getInt();
+    }
+
+    // Reads a 4-byte int from inputStream. Has the side effect of advancing the input stream.
+    public static int readIntFromStream(InputStream inputStream) {
+        byte[] i = new byte[MessageBuilder.intByteLength];
+        try {
+            inputStream.read(i);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return MessageParser.byteToInt(i);
     }
 }
