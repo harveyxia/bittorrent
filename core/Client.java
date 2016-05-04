@@ -1,11 +1,14 @@
 package core;
 
+import tracker.TrackerRequest;
+import tracker.TrackerResponse;
 import utils.DataFile;
 import utils.MessageBuilder;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
+import java.util.List;
 
 import static utils.MessageParser.getMessageId;
 
@@ -16,7 +19,9 @@ public class Client {
 
     private static final int BACKLOG = 10;
     private static final int CLIENT_PORT = 200;
-    private static final int SERVER_PORT = 6789;
+    private static final int SERVER_PORT = 300;
+    private static Inet4Address trackerAddr;
+    private static int trackerPort;
     private HashMap<Inet4Address, ConnectionState> peers;
 
     private void onReceiveMessage(byte[] message) {
@@ -59,9 +64,16 @@ public class Client {
         }
     }
 
-    public Inet4Address[] getPeers() {
-        // TODO: get peer list from tracker
-        return new Inet4Address[0];
+    public TrackerResponse getTrackerResponse(String filename) throws IOException {
+
+        Socket socket = new Socket(trackerAddr, trackerPort);
+
+        // Send tracker request
+        TrackerRequest request = new TrackerRequest(TrackerRequest.Event.STARTED, (InetSocketAddress) socket.getLocalSocketAddress(), filename);
+        request.send(socket.getOutputStream());
+
+        // Receive tracker response
+        return TrackerResponse.fromStream(socket.getInputStream());
     }
 
     public void connect(Inet4Address peer) {
@@ -75,7 +87,7 @@ public class Client {
             return;
         }
 
-        try (Socket socket = new Socket(peer, SERVER_PORT, localAddr, CLIENT_PORT)) {
+        try (Socket socket = new Socket(peer, SERVER_PORT)) {
             peers.put(peer, ConnectionState.getInitialState());
             // TODO: send desired filename
         } catch (IOException e) {
