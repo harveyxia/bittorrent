@@ -1,13 +1,12 @@
 package core;
 
 import message.MessageBuilder;
+import tracker.TrackerRequest;
+import tracker.TrackerResponse;
 import utils.DataFile;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
@@ -18,9 +17,13 @@ import java.util.concurrent.Executors;
  */
 public class Client {
 
+    public static final int NUM_THREADS = 2;
     private static final int BACKLOG = 10;
     private static final String CMD_USAGE = "java Client clientName clientPort serverPort";
-    public static final int NUM_THREADS = 2;
+    private static final int CLIENT_PORT = 200;
+    private static final int SERVER_PORT = 300;
+    private static Inet4Address trackerAddr;
+    private static int trackerPort;
 
     private HashMap<Peer, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
     private HashMap<Peer, Socket> connections;                  // maintain TCP state of each p2p connection
@@ -29,6 +32,16 @@ public class Client {
     private int clientPort;
     private int listenPort;
     private String clientName;
+
+    public Client(String clientName, int clientPort, int listenPort) {
+        this.connectionStates = new HashMap<>();
+        this.connections = new HashMap<>();
+        this.clientName = clientName;
+        this.clientPort = clientPort;
+        this.listenPort = listenPort;
+        logOutput("listening on port " + listenPort);
+        logOutput("downloading on port " + clientPort);
+    }
 
     public static void main(String[] args) {
         if (args.length != 3) {
@@ -43,16 +56,6 @@ public class Client {
         ExecutorService service = Executors.newFixedThreadPool(NUM_THREADS);
         service.submit(listenThread);
         service.submit(downloadThread);
-    }
-
-    public Client(String clientName, int clientPort, int listenPort) {
-        this.connectionStates = new HashMap<>();
-        this.connections = new HashMap<>();
-        this.clientName = clientName;
-        this.clientPort = clientPort;
-        this.listenPort = listenPort;
-        logOutput("listening on port " + listenPort);
-        logOutput("downloading on port " + clientPort);
     }
 
     /**
@@ -119,9 +122,16 @@ public class Client {
         return downloadThread;
     }
 
-    public Inet4Address[] getPeers() {
-        // TODO: get peer list from tracker
-        return new Inet4Address[0];
+    public TrackerResponse getTrackerResponse(String filename) throws IOException {
+
+        Socket socket = new Socket(trackerAddr, trackerPort);
+
+        // Send tracker request
+        TrackerRequest request = new TrackerRequest(TrackerRequest.Event.STARTED, (InetSocketAddress) socket.getLocalSocketAddress(), filename);
+        request.send(socket.getOutputStream());
+
+        // Receive tracker response
+        return TrackerResponse.fromStream(socket.getInputStream());
     }
 
     public void handshake(Peer peer, String filename) {

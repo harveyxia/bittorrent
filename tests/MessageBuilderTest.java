@@ -1,14 +1,13 @@
 package tests;
 
 import message.Message;
-import org.junit.Test;
 import message.MessageBuilder;
+import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 import static message.MessageBuilder.intToByte;
+import static org.junit.Assert.assertArrayEquals;
 
 /**
  * Harvey Xia.

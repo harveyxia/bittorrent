@@ -103,6 +103,7 @@ public class MessageBuilder {
 
     /**
      * Format: [HANDSHAKE_ID, FILENAME LENGTH, FILENAME]
+     *
      * @param filename The filename.
      */
     public static byte[] buildHandshake(String filename) {
