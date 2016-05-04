@@ -35,7 +35,7 @@ public class TrackerResponse {
             dis.read(raw);
             InetAddress ip = InetAddress.getByAddress(raw);
             int port = dis.readInt();
-            peers.add(new Peer(new InetSocketAddress(ip, port)));
+            peers.add(new Peer(ip, port));
         }
         return new TrackerResponse(interval, seeders, leechers, peers);
     }
@@ -47,8 +47,8 @@ public class TrackerResponse {
         dos.writeInt(seeders);
         dos.writeInt(leechers);
         for (Peer p : peers) {
-            dos.write(p.getAddr().getAddress().getAddress());
-            dos.writeInt(p.getAddr().getPort());
+            dos.write(p.getIp().getAddress());
+            dos.writeInt(p.getPort());
         }
     }
 
