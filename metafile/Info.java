@@ -26,8 +26,6 @@ public class Info {
         return pieceLength;
     }
 
-    w
-
     public long getFileLength() {
         return fileLength;
     }
