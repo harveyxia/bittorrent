@@ -3,7 +3,7 @@ package core;
 import java.net.InetAddress;
 
 /**
- * Created by marvin on 5/2/16.
+ * Object wrapper for (InetAddress, port) pair.
  */
 public class Peer {
 
