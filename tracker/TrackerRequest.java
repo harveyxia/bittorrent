@@ -13,6 +13,7 @@ public class TrackerRequest {
     private Event event;
     private InetSocketAddress addr;
     private String filename;
+
     public TrackerRequest(Event event, InetSocketAddress addr, String filename) {
         this.event = event;
         this.addr = addr;
