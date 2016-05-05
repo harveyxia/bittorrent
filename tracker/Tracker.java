@@ -25,16 +25,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Tracker implements Runnable {
 
+
     private ServerSocket welcomeSocket;
     private ConcurrentHashMap<String,List<Peer>> peerLists;
     private ConcurrentHashMap<String,ConcurrentHashMap<Peer, Timer>> timerList;
 
-    private boolean run;
-
     private final static int TIMEOUT = 2; // timeout in seconds
-    private ServerSocket welcomeSocket;
-    private ConcurrentHashMap<String, List<Peer>> peerLists;
-    private ConcurrentHashMap<String, ConcurrentHashMap<Peer, Timer>> timerList;
+    private boolean run;
 
     public Tracker(int port) throws IOException {
         this.welcomeSocket = new ServerSocket(port);
