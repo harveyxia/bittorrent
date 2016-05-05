@@ -14,4 +14,12 @@ public class Bitfield {
     public byte[] getBitfield() {
         return bitfield;
     }
+
+    public String toString() {
+        String bitfieldString = "";
+        for (int i = 0; i < bitfield.length; i++) {
+            bitfieldString = bitfieldString.concat(Integer.toString(bitfield[i]));
+        }
+        return bitfieldString;
+    }
 }

@@ -42,37 +42,72 @@ public class Client {
     public Client(String clientName, int clientPort, int listenPort, DataFile dataFile) {
         this.connectionStates = new HashMap<>();
         this.connections = new HashMap<>();
+        this.peers = new HashSet<>();
         this.clientName = clientName;
         this.clientPort = clientPort;
         this.listenPort = listenPort;
         this.dataFile = dataFile;
-        logOutput("listening on port " + listenPort);
-        logOutput("downloading on port " + clientPort);
+    }
+
+    /***** ONLY FOR TESTING *****/
+    public Client(String clientName, int clientPort, int listenPort, DataFile dataFile, Peer peer) {
+        this.connectionStates = new HashMap<>();
+        this.connections = new HashMap<>();
+        this.peers = new HashSet<>();
+        this.clientName = clientName;
+        this.clientPort = clientPort;
+        this.listenPort = listenPort;
+        this.dataFile = dataFile;
+        peers.add(peer);
     }
 
     public static void main(String[] args) {
-        if (args.length != 4) {
+//        if (args.length != 4) {
+//            System.out.println(CMD_USAGE);
+//            return;
+//        }
+        if (args.length != 7) {
             System.out.println(CMD_USAGE);
             return;
         }
         String metafileName = args[1];
         int clientPort = Integer.parseInt(args[2]);
         int listenPort = Integer.parseInt(args[3]);
+        // ONLY FOR TESTING
+        Peer peer = null;
+        try {
+            peer = new Peer(Inet4Address.getByName(args[4]), Integer.parseInt(args[5]));
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return;
+        }
         Metafile metafile = MetafileUtils.parseMetafile(metafileName);
 
         try {
-            DataFile datafile = new DataFile(metafile.getInfo().getFilename(),
-                    metafile.getInfo().getFileLength(),
-                    metafile.getInfo().getPieceLength());
-            Client client = new Client(args[0], clientPort, listenPort, datafile);
+            DataFile datafile = null;
+            Client client = null;
+            if (clientPort == 6001) {
+                datafile = new DataFile(true,
+                        metafile.getInfo().getFilename(),
+                        args[6],
+                        metafile.getInfo().getFileLength(),
+                        metafile.getInfo().getPieceLength());
+                client = new Client(args[0], clientPort, listenPort, datafile, peer);
+            } else {
+                datafile = new DataFile(false,
+                        metafile.getInfo().getFilename(),
+                        args[6],
+                        metafile.getInfo().getFileLength(),
+                        metafile.getInfo().getPieceLength());
+                client = new Client(args[0], clientPort, listenPort, datafile);
+            }
             Thread listenThread = client.getListenThread();
-            Thread downloadThread = client.getEventThread("fileId", "trackerUrl");
+            Thread eventThread = client.getEventThread("fileId", "trackerUrl");
             ExecutorService service = Executors.newFixedThreadPool(NUM_THREADS);
             service.submit(listenThread);
-            service.submit(downloadThread);
+            service.submit(eventThread);
         } catch (IOException e) {
             e.printStackTrace();
-            return;
         }
     }
 
@@ -87,11 +122,14 @@ public class Client {
             serverThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    logOutput("listening on port " + listenPort);
                     while (true) {
                         // Accept peer connections
-                        try (Socket inConn = socket.accept()) {
+                        try {
+                            Socket inConn = socket.accept();
                             logOutput("accepted new connection from " + inConn.getInetAddress() + " at port " + inConn.getPort());
                             Peer peer = new Peer(inConn.getInetAddress(), inConn.getPort());
+                            peers.add(peer);
                             connections.put(peer, inConn);
                             connectionStates.put(peer, ConnectionState.getInitialState());
                         } catch (IOException e) {
@@ -114,16 +152,21 @@ public class Client {
         downloadThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                logOutput("downloading on port " + clientPort);
                 // 1. contact tracker for initial peer list
                 // 2. select peers to connectToPeer
                 // 3. connectToPeer peers
                 // 4. start event loop for each out going connection
                 while (true) {
-                    for (Peer peer : connectionStates.keySet()) {
+                    for (Peer peer : peers) {
                         try {
-                            Socket peerSocket = connections.get(peer);
-                            Message message = MessageParser.parseMessage(peerSocket.getInputStream());
-                            respondToMessage(message, peer);
+                            if (!connections.containsKey(peer)) {
+                                connectToPeer(peer, dataFile.getFilename());
+                            } else {
+                                Socket peerSocket = connections.get(peer);
+                                Message message = MessageParser.parseMessage(peerSocket.getInputStream());
+                                respondToMessage(message, peer);
+                            }
                             // send update to peer about client's state towards the peer if changed
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -136,28 +179,42 @@ public class Client {
     }
 
     public void respondToMessage(Message message, Peer peer) {
+        ConnectionState peerState = connectionStates.get(peer);
         switch (message.getMessageID()) {
             case HANDSHAKE_ID:
+                logOutput("receive Handshake for " + message.getFilename() + " from " + peer);
                 if (!message.getFilename().equalsIgnoreCase(dataFile.getFilename())) {
                     return; // don't respond to handshakes for files that this doesn't have
                 }
                 sendBitfield(peer);
                 break;
             case INTERESTED_ID:
+                logOutput("receive Interested from " + peer);
+                peerState.setPeerInterested(true);
                 break;
             case NOT_INTERESTED_ID:
+                logOutput("receive Not Interested from " + peer);
+                peerState.setPeerInterested(false);
+                break;
+            case CHOKE_ID:
+                logOutput("receive Choke from " + peer);
+                peerState.setPeerChoking(true);
+                break;
+            case UNCHOKE_ID:
+                logOutput("receive Unchoke from " + peer);
+                peerState.setPeerChoking(false);
                 break;
             case HAVE_ID:
+                logOutput("receive Have for " + message.getPieceIndex() + " from " + peer);
+                peerState.setPieceToHave(message.getPieceIndex());
                 break;
             case REQUEST_ID:
                 break;
             case PIECE_ID:
                 break;
             case BITFIELD_ID:
-                break;
-            case CHOKE_ID:
-                break;
-            case UNCHOKE_ID:
+                logOutput("receive Bitfield " + message.getBitfield() + " from " + peer);
+                peerState.setBitfield(message.getBitfield().getBitfield());
                 break;
         }
     }
@@ -196,7 +253,7 @@ public class Client {
     public void requestFirstAvailPiece(Peer peer) {
         ConnectionState peerState = connectionStates.get(peer);
         for (int i = 0; i < dataFile.getNumPieces(); i++) {
-            if (dataFile.missingPiece(i) && peerState.getBitfield()[i] == 1) {
+            if (dataFile.missingPiece(i) && peerState.hasPiece(i)) {
                 sendRequest(peer, i, 0, dataFile.getPieceLength()); // request entire piece
                 break;
             }
