@@ -1,3 +1,11 @@
+## How To Use
+
+To make:
+$ make
+
+To test:
+$ ./runtests.sh
+
 ## Project Structure
 
 TorrentParser.java - parses a file and returns a Torrent object
