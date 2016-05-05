@@ -107,8 +107,8 @@ public class Client {
                         //                            if (state.isEstablished()) {        // Piece exchange
                         //                                // Piece exchange
                         //                            } else {                            // Handshake
-                        //                                // 1. Receive sendHandshake message
-                        //                                // 2. Send sendHandshake message
+                        //                                // 1. Receive connectToPeer message
+                        //                                // 2. Send connectToPeer message
                         //                            }
                         //                        }
                     }
@@ -129,8 +129,8 @@ public class Client {
             @Override
             public void run() {
                 // 1. contact tracker for initial peer list
-                // 2. select peers to sendHandshake
-                // 3. sendHandshake peers
+                // 2. select peers to connectToPeer
+                // 3. connectToPeer peers
                 // 4. start event loop for each out going connection
                 while (true) {
                     for (Peer peer : connectionStates.keySet()) {
@@ -167,50 +167,74 @@ public class Client {
     /**
      * Initiate connection to another peer.
      */
-    public void sendHandshake(Peer peer, String filename) {
+    public void connectToPeer(Peer peer, String filename) {
         try {
             logOutput("connecting to " + peer.getIp() + " at port " + peer.getPort());
             Socket socket = new Socket(peer.getIp(), peer.getPort(), InetAddress.getLocalHost(), clientPort);
             connections.put(peer, socket);
             connectionStates.put(peer, ConnectionState.getInitialState());
-            // send sendHandshake
-            byte[] handshakeMessage = MessageBuilder.buildHandshake(filename);
-            socket.getOutputStream().write(handshakeMessage);
-            // send bitfield
-            byte[] bitfieldMessage = MessageBuilder.buildBitfield(dataFile.getBitfield());
-            socket.getOutputStream().write(bitfieldMessage);
+            sendHandshake(peer, filename);
+            sendBitfield(peer, dataFile.getBitfield());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void sendHave(Inet4Address peer) {
+    /**
+     * Requests from peer the first missing piece that peer has.
+     */
+    public void requestFirstAvailPiece(Peer peer) {
+        ConnectionState peerState = connectionStates.get(peer);
+        for (int i = 0; i < dataFile.getNumPieces(); i++) {
+            if (dataFile.missingPiece(i) && peerState.getBitfield()[i] == 1) {
+                sendRequest(peer, i, 0, dataFile.getPieceLength()); // request entire piece
+                break;
+            }
+        }
     }
 
-    public void sendChoke(Inet4Address peer) {
+    public void sendRequest(Peer peer, int pieceIndex, int begin, int length) {
+        logOutput(String.format("sending Request to " + peer + " for PieceIndex:%d,Begin:%d,Length:%d", pieceIndex, begin, length));
+        dataFile.setPieceToRequested(pieceIndex);
+        byte[] requestMessage = MessageBuilder.buildRequest(pieceIndex, begin, length);
+        sendMessage(peer, requestMessage);
     }
 
-    public void sendUnchoke(Inet4Address peer) {
+    public void sendHave(Peer peer) {
     }
 
-    public void sendInterested(Inet4Address peer) {
+    public void sendChoke(Peer peer) {
     }
 
-    public void sendUninterested(Inet4Address peer) {
+    public void sendUnchoke(Peer peer) {
     }
 
-    // TODO: are we implementing keep-alive messages?
-    public void sendKeepAlive(Inet4Address peer) {
+    public void sendInterested(Peer peer) {
     }
 
-    public void sendRequest(Inet4Address peer, int index, int begin, int length) {
+    public void sendUninterested(Peer peer) {
     }
 
-    public void sendPiece(Inet4Address peer, DataFile file, int index, int begin, int length) {
+    public void sendPiece(Peer peer, DataFile file, int index, int begin, int length) {
     }
 
-    // TODO: do we need this if we're not implementing end-game behavior?
-    public void sendCancel(Inet4Address peer) {
+    public void sendHandshake(Peer peer, String filename) {
+        byte[] handshakeMessage = MessageBuilder.buildHandshake(filename);
+        sendMessage(peer, handshakeMessage);
+    }
+
+    public void sendBitfield(Peer peer, byte[] bitfield) {
+        byte[] bitfieldMessage = MessageBuilder.buildBitfield(bitfield);
+        sendMessage(peer, bitfieldMessage);
+    }
+
+    public void sendMessage(Peer peer, byte[] message) {
+        try {
+            Socket peerSocket = connections.get(peer);
+            peerSocket.getOutputStream().write(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void logOutput(String s) {
