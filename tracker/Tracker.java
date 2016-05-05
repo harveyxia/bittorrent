@@ -53,6 +53,7 @@ public class Tracker {
         Event event = req.getEvent();
         InetSocketAddress addr = req.getAddr();
         String fileName = req.getFilename();
+        Peer peer = new Peer(addr.getAddress(), addr.getPort());
         List<Peer> peers = null;
 
         switch (event) {
@@ -60,8 +61,11 @@ public class Tracker {
                 // must be submitting a new file
                 if (!peerLists.containsKey(fileName)){
                     peers = new ArrayList<>();
-                    peers.add(new Peer(addr.getAddress(), addr.getPort()));
+                    peers.add(peer);
                     peerLists.put(fileName, peers);
+
+                    stopTimer(fileName, peer);
+
                     return new TrackerResponse(TIMEOUT, 1, 0, peers);
                 }
 
@@ -79,7 +83,8 @@ public class Tracker {
                 // may no longer be seeded
                 peers = peerLists.get(fileName);
                 // TODO: is this mutable?
-                peers.add(new Peer(addr.getAddress(), addr.getPort()));
+                peers.add(peer);
+                startTimer(fileName, peer);
                 return new TrackerResponse(TIMEOUT, peers.size(), 0, peers);
 
             case STOPPED:
@@ -92,7 +97,8 @@ public class Tracker {
                 // else remove from peer list
                 peers = peerLists.get(fileName);
                 // TODO: is this mutable?
-                peers.remove(new Peer(addr.getAddress(), addr.getPort()));
+                peers.remove(peer);
+                stopTimer(fileName, peer);
                 break;
 
             default:
@@ -104,6 +110,7 @@ public class Tracker {
 
                 // else just a regular annoucement
                 peers = peerLists.get(fileName);
+                startTimer(fileName, peer);
                 return new TrackerResponse(TIMEOUT, peers.size(), 0, peers);
         }     
 
@@ -111,7 +118,7 @@ public class Tracker {
         return new TrackerResponse(-1, 0, 0, null);
     }
 
-    public void startTimer(String fileName, Peer peer) {
+    public void stopTimer(String fileName, Peer peer) {
         ConcurrentHashMap<Peer, Timer> timers;
         if (timerList.contains(fileName)){
             timers = timerList.get(fileName);
@@ -119,7 +126,14 @@ public class Tracker {
                 // TODO: is this mutable?
                 timers.remove(peer);
             }
-        } else {
+        }
+    }
+
+    public void startTimer(String fileName, Peer peer) {
+        ConcurrentHashMap<Peer, Timer> timers;
+
+        stopTimer(fileName, peer);
+        if (!timerList.contains(fileName)){
             timerList.put(fileName, new ConcurrentHashMap<Peer, Timer>());
         }
 
