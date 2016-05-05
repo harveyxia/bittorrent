@@ -7,11 +7,14 @@ import java.io.RandomAccessFile;
  * Wrapper around in-progress torrent data files.
  */
 public class DataFile {
-    public static final int PIECES = 2048;
-    public static final int PIECE_LENGTH = 512000;
+//    public static final int PIECE_LENGTH = 512000;
     public static final String MODE = "rw";
+
+    private final long fileLength;
+    private final int pieceLength;
+    private final int numPieces;
     private final RandomAccessFile file;
-    private byte[] bitField;
+    private byte[] bitfield;
 
     // TODO: send pieces in blocks (and maintain internal bitfield with block-granularity?)
 
@@ -21,7 +24,7 @@ public class DataFile {
     //            file.setLength(1000);
     //            file.seek(5);
     //            String s = "hello world!";
-    //            file.write(s.getBytes(), 0, s.length());
+    //            file.write(s.getBytes(), 0, s.fileLength());
     //        } catch (FileNotFoundException e) {
     //            e.printStackTrace();
     //        } catch (IOException e) {
@@ -29,10 +32,13 @@ public class DataFile {
     //        }
     //    }
 
-    public DataFile(String filename, long length) throws IOException {
+    public DataFile(String filename, long fileLength, int pieceLength) throws IOException {
+        this.fileLength = fileLength;
+        this.pieceLength = pieceLength;
+        this.numPieces = (int)Math.ceil( ((float) fileLength) / ((float) pieceLength) );
         file = new RandomAccessFile(filename, MODE);
-        file.setLength(length);
-        bitField = new byte[PIECES];
+        file.setLength(fileLength);
+        bitfield = new byte[numPieces];
     }
 
     public void writeAt(byte[] data, long pos) throws IOException {
@@ -42,5 +48,31 @@ public class DataFile {
 
     public void close() throws IOException {
         file.close();
+    }
+
+    /**
+     * Return true iff bitfield[pieceIndex] == 1, meaning that piece has been acquired.
+     */
+    public boolean hasPiece(int pieceIndex) {
+        return bitfield[pieceIndex] == 1;
+    }
+
+    /**
+     * Return true iff bitfield[pieceIndex] == 2, meaning that piece has been requested.
+     */
+    public boolean requestedPiece(int pieceIndex) {
+        return bitfield[pieceIndex] == 2;
+    }
+
+    public long getFileLength() {
+        return fileLength;
+    }
+
+    public int getPieceLength() {
+        return pieceLength;
+    }
+
+    public byte[] getBitfield() {
+        return bitfield;
     }
 }

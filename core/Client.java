@@ -1,6 +1,10 @@
 package core;
 
+import message.Message;
 import message.MessageBuilder;
+import message.MessageParser;
+import metafile.Metafile;
+import metafile.MetafileUtils;
 import tracker.TrackerRequest;
 import tracker.TrackerResponse;
 import utils.DataFile;
@@ -19,7 +23,7 @@ public class Client {
 
     public static final int NUM_THREADS = 2;
     private static final int BACKLOG = 10;
-    private static final String CMD_USAGE = "java Client clientName clientPort serverPort";
+    private static final String CMD_USAGE = "java Client clientName metaFile clientPort serverPort";
     private static final int CLIENT_PORT = 200;
     private static final int SERVER_PORT = 300;
     private static Inet4Address trackerAddr;
@@ -27,35 +31,49 @@ public class Client {
 
     private HashMap<Peer, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
     private HashMap<Peer, Socket> connections;                  // maintain TCP state of each p2p connection
-    private HashMap<String, DataFile> files;                    // maintain map of filenames to files
+    //    private HashMap<String, DataFile> files;                    // maintain map of filenames to files
     private HashSet<Peer> peers;                                // list of all peers
     private int clientPort;
     private int listenPort;
     private String clientName;
 
-    public Client(String clientName, int clientPort, int listenPort) {
+    private DataFile dataFile;
+
+    public Client(String clientName, int clientPort, int listenPort, DataFile dataFile) {
         this.connectionStates = new HashMap<>();
         this.connections = new HashMap<>();
         this.clientName = clientName;
         this.clientPort = clientPort;
         this.listenPort = listenPort;
+        this.dataFile = dataFile;
         logOutput("listening on port " + listenPort);
         logOutput("downloading on port " + clientPort);
     }
 
     public static void main(String[] args) {
-        if (args.length != 3) {
+        if (args.length != 4) {
             System.out.println(CMD_USAGE);
             return;
         }
-        int clientPort = Integer.parseInt(args[1]);
-        int listenPort = Integer.parseInt(args[2]);
-        Client client = new Client(args[0], clientPort, listenPort);
-        Thread listenThread = client.getListenThread();
-        Thread downloadThread = client.getDownloadThread("fileId", "trackerUrl");
-        ExecutorService service = Executors.newFixedThreadPool(NUM_THREADS);
-        service.submit(listenThread);
-        service.submit(downloadThread);
+        String metafileName = args[1];
+        int clientPort = Integer.parseInt(args[2]);
+        int listenPort = Integer.parseInt(args[3]);
+        Metafile metafile = MetafileUtils.parseMetafile(metafileName);
+
+        try {
+            DataFile datafile = new DataFile(metafile.getInfo().getFilename(),
+                    metafile.getInfo().getFileLength(),
+                    metafile.getInfo().getPieceLength());
+            Client client = new Client(args[0], clientPort, listenPort, datafile);
+            Thread listenThread = client.getListenThread();
+            Thread downloadThread = client.getEventThread("fileId", "trackerUrl");
+            ExecutorService service = Executors.newFixedThreadPool(NUM_THREADS);
+            service.submit(listenThread);
+            service.submit(downloadThread);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
     }
 
     /**
@@ -75,22 +93,24 @@ public class Client {
                             logOutput("accepted new connection from " + inConn.getInetAddress() + " at port " + inConn.getPort());
                             Peer peer = new Peer(inConn.getInetAddress(), inConn.getPort());
                             connections.put(peer, inConn);
+                            connectionStates.put(peer, ConnectionState.getInitialState());
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
 
-                        // Process any new messages
-                        for (Peer peer : peers) {
-                            ConnectionState state = connectionStates.get(peer);
-                            if (state == null) continue;
-
-                            if (state.isEstablished()) {        // Piece exchange
-                                // Piece exchange
-                            } else {                            // Handshake
-                                // 1. Receive handshake message
-                                // 2. Send handshake message
-                            }
-                        }
+                        //                        // Process any new messages
+                        //                        for (Peer peer : peers) {
+                        //                            ConnectionState state = connectionStates.get(peer);
+                        //                            if (state == null) continue;
+                        //
+                        //                            if (state.isEstablished()) {        // Piece exchange
+                        //                                // Piece exchange
+                        //                            } else {                            // Handshake
+                        //                                // 1. Receive sendHandshake message
+                        //                                // 2. Send sendHandshake message
+                        //                            }
+                        //                        }
                     }
                 }
             });
@@ -101,18 +121,27 @@ public class Client {
     }
 
     /**
-     * Download a file by contacting tracker and connecting to peers.
+     * Process messages from peers and take proper action.
      */
-    public Thread getDownloadThread(String fileId, String trackerUrl) {
+    public Thread getEventThread(String fileId, String trackerUrl) {
         Thread downloadThread;
         downloadThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                // 1. contact tracker
-                // 2. handshake peers
-                // 3. event loop for each out going connection
+                // 1. contact tracker for initial peer list
+                // 2. select peers to sendHandshake
+                // 3. sendHandshake peers
+                // 4. start event loop for each out going connection
                 while (true) {
                     for (Peer peer : connectionStates.keySet()) {
+                        try {
+                            Socket peerSocket = connections.get(peer);
+                            Message message = MessageParser.parseMessage(peerSocket.getInputStream());
+                            // respond to message
+                            // send update to peer about client's state towards the peer if changed
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         // Determine action based on state
                         // Send message
                     }
@@ -134,14 +163,22 @@ public class Client {
         return TrackerResponse.fromStream(socket.getInputStream());
     }
 
-    public void handshake(Peer peer, String filename) {
+
+    /**
+     * Initiate connection to another peer.
+     */
+    public void sendHandshake(Peer peer, String filename) {
         try {
             logOutput("connecting to " + peer.getIp() + " at port " + peer.getPort());
             Socket socket = new Socket(peer.getIp(), peer.getPort(), InetAddress.getLocalHost(), clientPort);
+            connections.put(peer, socket);
             connectionStates.put(peer, ConnectionState.getInitialState());
-            // 1. send handshake
+            // send sendHandshake
             byte[] handshakeMessage = MessageBuilder.buildHandshake(filename);
             socket.getOutputStream().write(handshakeMessage);
+            // send bitfield
+            byte[] bitfieldMessage = MessageBuilder.buildBitfield(dataFile.getBitfield());
+            socket.getOutputStream().write(bitfieldMessage);
         } catch (IOException e) {
             e.printStackTrace();
         }

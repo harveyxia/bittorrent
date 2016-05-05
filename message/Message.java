@@ -11,7 +11,7 @@ public class Message {
     private Piece piece;
     private Bitfield bitfield;
 
-    // CHOKED, INTERESTED, NOT_INTERESTED
+    // CHOKE, UNCHOKE, INTERESTED, NOT_INTERESTED
     public Message(MessageID messageID) {
         this.messageID = messageID;
     }
@@ -67,6 +67,6 @@ public class Message {
     }
 
     public enum MessageID {
-        INTERESTED_ID, NOT_INTERESTED_ID, HAVE_ID, REQUEST_ID, PIECE_ID, BITFIELD_ID, HANDSHAKE_ID, CHOKE_ID
+        INTERESTED_ID, NOT_INTERESTED_ID, HAVE_ID, REQUEST_ID, PIECE_ID, BITFIELD_ID, HANDSHAKE_ID, CHOKE_ID, UNCHOKE_ID
     }
 }

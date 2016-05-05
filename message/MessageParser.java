@@ -22,6 +22,9 @@ public class MessageParser {
                 case CHOKE_ID:
                     message = new Message(messageId);
                     break;
+                case UNCHOKE_ID:
+                    message = new Message(messageId);
+                    break;
                 case INTERESTED_ID:
                     message = new Message(messageId);
                     break;

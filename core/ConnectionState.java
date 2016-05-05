@@ -10,6 +10,7 @@ public class ConnectionState {
     private boolean amInterested;
     private boolean peerChoking;
     private boolean peerInterested;
+    private byte[] bitfield;
 
     public ConnectionState(boolean amChoking, boolean amInterested, boolean peerChoking, boolean peerInterested, boolean established) {
         this.amChoking = amChoking;
@@ -61,5 +62,23 @@ public class ConnectionState {
 
     public void setEstablished(boolean established) {
         this.established = established;
+    }
+
+    public byte[] getBitfield() {
+        return bitfield;
+    }
+
+    public void setBitfield(byte[] bitfield) {
+        this.bitfield = bitfield;
+    }
+
+    /********************** DOWNLOAD ***********************/
+
+    public boolean canDownloadFrom() {
+        return amInterested && !peerChoking;
+    }
+
+    public boolean canUploadTo() {
+        return !amChoking && peerInterested;
     }
 }
