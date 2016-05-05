@@ -1,6 +1,7 @@
 package tracker;
 
 import core.Peer;
+import tracker.TrackerRequest.Event;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +9,9 @@ import java.io.OutputStream;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.InetAddress
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,13 +46,14 @@ public class Tracker {
     private TrackerResponse processReq(TrackerRequest req) {
         Event event = req.getEvent();
         InetSocketAddress addr = req.getAddr();
-        String fileName = req.getFileName();
+        String fileName = req.getFilename();
+        List<Peer> peers = null;
 
         switch (event) {
-            case Event.COMPLETED:
+            case COMPLETED:
                 // must be submitting a new file
                 if (!peerLists.containsKey(fileName)){
-                    List<Peer> peers = new ArrayList<>();
+                    peers = new ArrayList<>();
                     peers.add(new Peer(addr.getAddress(), addr.getPort()));
                     peerLists.put(fileName, peers);
                     return new TrackerResponse(2, 1, 0, peers);
@@ -58,7 +62,7 @@ public class Tracker {
                 // else do nothing, not tracking # seeders / leachers
                 break;
 
-            case Event.STARTED:
+            case STARTED:
                 // starting a new session but file doesn't exist
                 if (!peerLists.containsKey(fileName)) {
                     return new TrackerResponse(2, 0, 0, null);
@@ -67,12 +71,12 @@ public class Tracker {
                 // else new session for existing file
                 // note that this only says it was tracked at SOME point
                 // may no longer be seeded
-                List<Peer> peers = peerLists.get(fileName);
+                peers = peerLists.get(fileName);
                 // TODO: is this mutable?
                 peers.add(new Peer(addr.getAddress(), addr.getPort()));
-                return new TrackerResponse(2, peers.length(), 0, peers);
+                return new TrackerResponse(2, peers.size(), 0, peers);
 
-            case Event.STOPPED:
+            case STOPPED:
 
                 // stupid request
                 if (!peerLists.containsKey(fileName)) {
@@ -80,7 +84,7 @@ public class Tracker {
                 }
 
                 // else remove from peer list
-                List<Peer> peers = peerLists.get(fileName);
+                peers = peerLists.get(fileName);
                 // TODO: is this mutable?
                 peers.remove(new Peer(addr.getAddress(), addr.getPort()));
                 break;
@@ -93,8 +97,8 @@ public class Tracker {
                 }
 
                 // else just a regular annoucement
-                List<Peer> peers = peerLists.get(fileName);
-                return new TrackerResponse(2, peers.length(), 0, peers);
+                peers = peerLists.get(fileName);
+                return new TrackerResponse(2, peers.size(), 0, peers);
         }     
 
         // if it gets this far, then it's a malformed request
