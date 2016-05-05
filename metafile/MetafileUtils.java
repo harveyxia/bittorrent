@@ -39,14 +39,14 @@ public class MetafileUtils {
     }
 
     private static Info parseInfoJson(JSONObject infoJson) {
-        // try {
-        //     String filename = infoJson.getString(FILENAME);
-        //     int pieceLength = infoJson.getInt(PIECE_LENGTH);
-        //     long fileLength = infoJson.getLong(FILE_LENGTH);
-        //     return new Info(filename, pieceLength, fileLength);
-        // } catch (JSONException e) {
-        //     e.printStackTrace();
+        try {
+            String filename = infoJson.getString(FILENAME);
+            int pieceLength = infoJson.getInt(PIECE_LENGTH);
+            long fileLength = infoJson.getLong(FILE_LENGTH);
+            return new Info(filename, pieceLength, fileLength);
+        } catch (JSONException e) {
+            e.printStackTrace();
             return null;
-        // }
+        }
     }
 }
