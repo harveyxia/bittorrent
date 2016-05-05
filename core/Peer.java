@@ -26,4 +26,24 @@ public class Peer {
     public String toString() {
         return ip + ":" + port;
     }
+
+    public boolean equals(Object o) {
+        if (o == this) 
+            return true;
+        if (o == null)
+            return false;
+
+        if (getClass() != o.getClass())
+            return false;
+
+        Peer p = (Peer) o;
+        return (port == p.getPort() && ip.equals(p.getIp()));
+    }
+
+    public int hashCode() {
+        int hash = 17;
+        hash = hash * 31 + port;
+        hash = hash * 31 + ip.hashCode();
+        return hash;
+    }
 }

@@ -16,6 +16,7 @@ import java.net.SocketTimeoutException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +59,12 @@ public class Tracker implements Runnable {
                 e.printStackTrace();
             }
         }
+
+        try {
+            welcomeSocket.close();
+        } catch (Exception e) {
+            // ignore
+        }
     }
 
     public void shutdown(){
@@ -98,9 +105,12 @@ public class Tracker implements Runnable {
                 // note that this only says it was tracked at SOME point
                 // may no longer be seeded
                 peers = peerLists.get(fileName);
-                // TODO: is this mutable?
-                peers.add(peer);
-                startTimer(fileName, peer);
+                if (!peers.contains(peer)) {
+                    peers.add(peer);
+                    peerLists.put(fileName, peers);
+                    startTimer(fileName, peer);
+                }
+                
                 return new TrackerResponse(TIMEOUT, peers.size(), 0, peers);
 
             case STOPPED:
@@ -112,9 +122,11 @@ public class Tracker implements Runnable {
 
                 // else remove from peer list
                 peers = peerLists.get(fileName);
-                // TODO: is this mutable?
-                peers.remove(peer);
-                stopTimer(fileName, peer);
+                if (peers.contains(peer)) {
+                    peers.remove(peer);
+                    peerLists.put(fileName, peers);
+                    stopTimer(fileName, peer);
+                }
                 return null;
 
             default:
@@ -126,6 +138,10 @@ public class Tracker implements Runnable {
 
                 // else just a regular annoucement
                 peers = peerLists.get(fileName);
+                if (!peers.contains(peer)) {
+                    peers.add(peer);
+                    peerLists.put(fileName, peers);
+                }
                 startTimer(fileName, peer);
                 return new TrackerResponse(TIMEOUT, peers.size(), 0, peers);
         }
@@ -137,11 +153,12 @@ public class Tracker implements Runnable {
 
     public void stopTimer(String fileName, Peer peer) {
         ConcurrentHashMap<Peer, Timer> timers;
-        if (timerList.contains(fileName)) {
+        if (timerList.containsKey(fileName)) {
             timers = timerList.get(fileName);
-            if (timers.contains(peer)) {
-                // TODO: is this mutable?
-                timers.remove(peer);
+            if (timers.containsKey(peer)) {
+                Timer t = timers.remove(peer);
+                t.cancel();
+                timerList.put(fileName, timers);
             }
         }
     }
@@ -150,34 +167,39 @@ public class Tracker implements Runnable {
         ConcurrentHashMap<Peer, Timer> timers;
 
         stopTimer(fileName, peer);
-        if (!timerList.contains(fileName)) {
+        if (!timerList.containsKey(fileName)) {
             timerList.put(fileName, new ConcurrentHashMap<Peer, Timer>());
         }
 
         timers = timerList.get(fileName);
         Timer timer = new Timer();
-        // TODO: is this mutable?
         // TODO: concurrency issues.
         timers.put(peer, timer);
-        timer.schedule(new CheckTimeout(fileName, peer), TIMEOUT * 1000);
+        timerList.put(fileName, timers);
+        timer.schedule(new CheckTimeout(this, fileName, peer, timer), TIMEOUT * 1000);
     }
 
     public class CheckTimeout extends TimerTask {
         private String fileName;
         private Peer peer;
+        private Timer timer;
+        private Tracker tracker;
 
-        public CheckTimeout(String fileName, Peer peer) {
+        public CheckTimeout(Tracker tracker, String fileName, Peer peer, Timer timer) {
+            this.tracker = tracker;
             this.fileName = fileName;
             this.peer = peer;
+            this.timer = timer;
         }
 
         public void run() {
-            if (peerLists.contains(fileName)) {
+            if (peerLists.containsKey(fileName)) {
                 List<Peer> peers = peerLists.get(fileName);
                 if (peers.contains(peer)) {
-                    // TODO: is this mutable?
                     peers.remove(peer);
+                    peerLists.put(fileName, peers);
                 }
+                timer.cancel();
             }
         }
     }
