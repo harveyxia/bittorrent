@@ -41,6 +41,10 @@ public class TrackerResponse {
 
     public void send(OutputStream out) throws IOException {
 
+        // hack for handling malformed requests
+        if (interval < 0)
+            return;
+
         DataOutputStream dos = new DataOutputStream(out);
         dos.writeInt(interval);
         dos.writeInt(seeders);
