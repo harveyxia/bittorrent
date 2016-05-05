@@ -61,6 +61,7 @@ public class TrackerRequest {
     public enum Event {
         STARTED,
         STOPPED,
-        COMPLETED
+        COMPLETED,
+        PING
     }
 }

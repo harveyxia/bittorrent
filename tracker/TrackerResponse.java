@@ -25,30 +25,35 @@ public class TrackerResponse {
     public static TrackerResponse fromStream(InputStream in) throws IOException {
 
         DataInputStream dis = new DataInputStream(in);
-        int interval = dis.readInt();
-        int seeders = dis.readInt();
-        int leechers = dis.readInt();
-        List<Peer> peers = new ArrayList<>();
-        byte[] raw = new byte[4];
-        for (int i = 0; i < seeders + leechers; i++) {
-            dis.read(raw);
-            InetAddress ip = InetAddress.getByAddress(raw);
-            int port = dis.readInt();
-            peers.add(new Peer(ip, port));
+
+        try {
+            int interval = dis.readInt();
+            int seeders = dis.readInt();
+            int leechers = dis.readInt();
+            List<Peer> peers = new ArrayList<>();
+            byte[] raw = new byte[4];
+            for (int i = 0; i < seeders + leechers; i++) {
+                dis.read(raw);
+                InetAddress ip = InetAddress.getByAddress(raw);
+                int port = dis.readInt();
+                peers.add(new Peer(ip, port));
+            }
+            return new TrackerResponse(interval, seeders, leechers, peers);
+        } catch (Exception e) {
+            // was a malformed request
+            return null;
         }
-        return new TrackerResponse(interval, seeders, leechers, peers);
     }
 
     public void send(OutputStream out) throws IOException {
-
-        // hack for handling malformed requests
-        if (interval < 0)
-            return;
 
         DataOutputStream dos = new DataOutputStream(out);
         dos.writeInt(interval);
         dos.writeInt(seeders);
         dos.writeInt(leechers);
+
+        if (peers == null)
+            return;
         for (Peer p : peers) {
             dos.write(p.getIp().getAddress());
             dos.writeInt(p.getPort());
