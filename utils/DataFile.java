@@ -2,17 +2,20 @@ package utils;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 
 /**
  * Wrapper around in-progress torrent data files.
  */
 public class DataFile {
     //    public static final int PIECE_LENGTH = 512000;
-    public static final String MODE = "rw";
     private final long fileLength;
     private final int pieceLength;
     private final int numPieces;
     private final RandomAccessFile file;
+    private final Path dataFolder;
     private String filename;        // treat as unique identifier for file
     private byte[] bitfield;
 
@@ -32,14 +35,21 @@ public class DataFile {
     //        }
     //    }
 
-    public DataFile(String filename, long fileLength, int pieceLength) throws IOException {
+    public DataFile(boolean create, String filename, String directory, long fileLength, int pieceLength) throws IOException {
+        this.dataFolder = Paths.get(directory);
         this.filename = filename;
         this.fileLength = fileLength;
         this.pieceLength = pieceLength;
         this.numPieces = (int) Math.ceil(((float) fileLength) / ((float) pieceLength));    // round up
-        file = new RandomAccessFile(filename, MODE);
-        file.setLength(fileLength);
-        bitfield = new byte[numPieces];
+        if (create) {
+            file = new RandomAccessFile(dataFolder.toString() + "/" + filename, "rw");
+            file.setLength(fileLength);
+            bitfield = new byte[numPieces];
+        } else {
+            file = new RandomAccessFile(dataFolder.toString() + "/" + filename, "r");
+            bitfield = new byte[numPieces];
+            Arrays.fill(bitfield, (byte) 1);
+        }
     }
 
     public void writeAt(byte[] data, long pos) throws IOException {
