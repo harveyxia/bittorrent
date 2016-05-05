@@ -10,6 +10,7 @@ public class DataFile {
     //    public static final int PIECE_LENGTH = 512000;
     public static final String MODE = "rw";
 
+    private String filename;        // treat as unique identifier for file
     private final long fileLength;
     private final int pieceLength;
     private final int numPieces;
@@ -33,6 +34,7 @@ public class DataFile {
     //    }
 
     public DataFile(String filename, long fileLength, int pieceLength) throws IOException {
+        this.filename = filename;
         this.fileLength = fileLength;
         this.pieceLength = pieceLength;
         this.numPieces = (int) Math.ceil(((float) fileLength) / ((float) pieceLength));    // round up
@@ -95,5 +97,9 @@ public class DataFile {
 
     public byte[] getBitfield() {
         return bitfield;
+    }
+
+    public String getFilename() {
+        return filename;
     }
 }
