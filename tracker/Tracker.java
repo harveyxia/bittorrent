@@ -11,6 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketTimeoutException;
 
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,31 +23,45 @@ import java.util.TimerTask;
 /**
  * Bittorrent tracker.
  */
-public class Tracker {
+public class Tracker implements Runnable {
 
     private ServerSocket welcomeSocket;
     private ConcurrentHashMap<String,List<Peer>> peerLists;
     private ConcurrentHashMap<String,ConcurrentHashMap<Peer, Timer>> timerList;
 
+    private boolean run;
+
     private final static int TIMEOUT = 2; // timeout in seconds
 
     public Tracker(int port) throws IOException {
         this.welcomeSocket = new ServerSocket(port);
+        this.welcomeSocket.setSoTimeout(1000);
+
         this.peerLists = new ConcurrentHashMap<String,List<Peer>>();
         this.timerList = new ConcurrentHashMap<String,ConcurrentHashMap<Peer, Timer>>();
+        this.run = true;
     }
 
-    public void listen() throws IOException {
-
-        while (true) {
+    public void run() {
+        while (run) {
             try (Socket socket = welcomeSocket.accept()) {
                 OutputStream out = socket.getOutputStream();
                 InputStream in = socket.getInputStream();
                 TrackerRequest req = TrackerRequest.fromStream(in);
-                TrackerResponse resp = processReq(req); // TODO: should actually do something
-                resp.send(out);
+                TrackerResponse resp = processReq(req);
+                if (resp != null)
+                    resp.send(out);
+            } catch (SocketTimeoutException e){
+                // ignore
+                // used to retest run condition
+            }catch (Exception e) {
+                e.printStackTrace();
             }
         }
+    }
+
+    public void shutdown(){
+        run = false;
     }
 
     private TrackerResponse processReq(TrackerRequest req) {
@@ -58,21 +73,22 @@ public class Tracker {
 
         switch (event) {
             case COMPLETED:
+
                 // must be submitting a new file
                 if (!peerLists.containsKey(fileName)){
                     peers = new ArrayList<>();
                     peers.add(peer);
                     peerLists.put(fileName, peers);
-
-                    stopTimer(fileName, peer);
-
+                    startTimer(fileName, peer);
                     return new TrackerResponse(TIMEOUT, 1, 0, peers);
                 }
 
-                // else do nothing, not tracking # seeders / leachers
-                break;
+                // finished downloading old file
+                // so no need to respond
+                return null;
 
             case STARTED:
+
                 // starting a new session but file doesn't exist
                 if (!peerLists.containsKey(fileName)) {
                     return new TrackerResponse(TIMEOUT, 0, 0, null);
@@ -99,7 +115,7 @@ public class Tracker {
                 // TODO: is this mutable?
                 peers.remove(peer);
                 stopTimer(fileName, peer);
-                break;
+                return null;
 
             default:
 
@@ -114,7 +130,8 @@ public class Tracker {
                 return new TrackerResponse(TIMEOUT, peers.size(), 0, peers);
         }     
 
-        // if it gets this far, then it's a malformed request
+        // if it gets this far, then it's either a malformed request
+        // or it's just an ACK
         return new TrackerResponse(-1, 0, 0, null);
     }
 
