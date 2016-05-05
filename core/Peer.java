@@ -22,4 +22,8 @@ public class Peer {
     public int getPort() {
         return port;
     }
+
+    public String toString() {
+        return ip + ":" + port;
+    }
 }
