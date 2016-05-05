@@ -17,12 +17,11 @@ public class TestRunner {
             System.out.println(failure.toString());
         }
 
-        System.out.println("\n==================");
-        if (result.wasSuccessful()){
-          System.out.println(" tests successful ");
-        } else {
-          System.out.println(" tests failed.... ");
-        }
-        System.out.println("==================\n");
+        System.out.println("\n=================="  );
+        if (result.wasSuccessful())
+          System.out.println(" tests successful "  );
+        else
+          System.out.println(" tests failed.... "  );
+        System.out.println(  "==================\n");
     }
 }

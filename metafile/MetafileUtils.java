@@ -26,26 +26,27 @@ public class MetafileUtils {
      */
     public static Metafile parseMetafile(String filename) {
         try {
-            JSONObject metafileJson = new JSONObject(new String(Files.readAllBytes(Paths.get(filename)), "UTF-8"));
+            String json = new String(Files.readAllBytes(Paths.get(filename)), "UTF-8");
+            JSONObject metafileJson = new JSONObject(json);
             JSONObject infoJson = metafileJson.getJSONObject(INFO);
             Info info = parseInfoJson(infoJson);
             String announce = metafileJson.getString(ANNOUNCE);
             return new Metafile(info, announce);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
     private static Info parseInfoJson(JSONObject infoJson) {
-        try {
-            String filename = infoJson.getString(FILENAME);
-            int pieceLength = infoJson.getInt(PIECE_LENGTH);
-            long fileLength = infoJson.getLong(FILE_LENGTH);
-            return new Info(filename, pieceLength, fileLength);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        // try {
+        //     String filename = infoJson.getString(FILENAME);
+        //     int pieceLength = infoJson.getInt(PIECE_LENGTH);
+        //     long fileLength = infoJson.getLong(FILE_LENGTH);
+        //     return new Info(filename, pieceLength, fileLength);
+        // } catch (JSONException e) {
+        //     e.printStackTrace();
             return null;
-        }
+        // }
     }
 }
