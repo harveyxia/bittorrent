@@ -94,23 +94,9 @@ public class Client {
                             Peer peer = new Peer(inConn.getInetAddress(), inConn.getPort());
                             connections.put(peer, inConn);
                             connectionStates.put(peer, ConnectionState.getInitialState());
-
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-
-                        //                        // Process any new messages
-                        //                        for (Peer peer : peers) {
-                        //                            ConnectionState state = connectionStates.get(peer);
-                        //                            if (state == null) continue;
-                        //
-                        //                            if (state.isEstablished()) {        // Piece exchange
-                        //                                // Piece exchange
-                        //                            } else {                            // Handshake
-                        //                                // 1. Receive connectToPeer message
-                        //                                // 2. Send connectToPeer message
-                        //                            }
-                        //                        }
                     }
                 }
             });
@@ -137,18 +123,43 @@ public class Client {
                         try {
                             Socket peerSocket = connections.get(peer);
                             Message message = MessageParser.parseMessage(peerSocket.getInputStream());
-                            // respond to message
+                            respondToMessage(message, peer);
                             // send update to peer about client's state towards the peer if changed
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        // Determine action based on state
-                        // Send message
                     }
                 }
             }
         });
         return downloadThread;
+    }
+
+    public void respondToMessage(Message message, Peer peer) {
+        switch (message.getMessageID()) {
+            case HANDSHAKE_ID:
+                if (!message.getFilename().equalsIgnoreCase(dataFile.getFilename())) {
+                    return; // don't respond to handshakes for files that this doesn't have
+                }
+                sendBitfield(peer);
+                break;
+            case INTERESTED_ID:
+                break;
+            case NOT_INTERESTED_ID:
+                break;
+            case HAVE_ID:
+                break;
+            case REQUEST_ID:
+                break;
+            case PIECE_ID:
+                break;
+            case BITFIELD_ID:
+                break;
+            case CHOKE_ID:
+                break;
+            case UNCHOKE_ID:
+                break;
+        }
     }
 
     public TrackerResponse getTrackerResponse(String filename) throws IOException {
@@ -163,7 +174,6 @@ public class Client {
         return TrackerResponse.fromStream(socket.getInputStream());
     }
 
-
     /**
      * Initiate connection to another peer.
      */
@@ -174,7 +184,7 @@ public class Client {
             connections.put(peer, socket);
             connectionStates.put(peer, ConnectionState.getInitialState());
             sendHandshake(peer, filename);
-            sendBitfield(peer, dataFile.getBitfield());
+            sendBitfield(peer);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -223,8 +233,8 @@ public class Client {
         sendMessage(peer, handshakeMessage);
     }
 
-    public void sendBitfield(Peer peer, byte[] bitfield) {
-        byte[] bitfieldMessage = MessageBuilder.buildBitfield(bitfield);
+    public void sendBitfield(Peer peer) {
+        byte[] bitfieldMessage = MessageBuilder.buildBitfield(dataFile.getBitfield());
         sendMessage(peer, bitfieldMessage);
     }
 

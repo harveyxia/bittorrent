@@ -19,7 +19,9 @@ public class MessageBuilder {
         return intToByte(Message.MessageID.CHOKE_ID.ordinal());
     }
 
-    public static byte[] buildUnchoke() { return intToByte(Message.MessageID.UNCHOKE_ID.ordinal()); }
+    public static byte[] buildUnchoke() {
+        return intToByte(Message.MessageID.UNCHOKE_ID.ordinal());
+    }
 
     public static byte[] buildInterested() {
         return intToByte(Message.MessageID.INTERESTED_ID.ordinal());

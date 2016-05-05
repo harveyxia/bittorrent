@@ -66,6 +66,10 @@ public class Message {
         return bitfield;
     }
 
+    public MessageID getMessageID() {
+        return messageID;
+    }
+
     public enum MessageID {
         INTERESTED_ID, NOT_INTERESTED_ID, HAVE_ID, REQUEST_ID, PIECE_ID, BITFIELD_ID, HANDSHAKE_ID, CHOKE_ID, UNCHOKE_ID
     }

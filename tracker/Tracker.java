@@ -6,7 +6,6 @@ import tracker.TrackerRequest.Event;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetAddress;
@@ -19,6 +18,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Bittorrent tracker.
@@ -32,6 +32,9 @@ public class Tracker implements Runnable {
     private boolean run;
 
     private final static int TIMEOUT = 2; // timeout in seconds
+    private ServerSocket welcomeSocket;
+    private ConcurrentHashMap<String, List<Peer>> peerLists;
+    private ConcurrentHashMap<String, ConcurrentHashMap<Peer, Timer>> timerList;
 
     public Tracker(int port) throws IOException {
         this.welcomeSocket = new ServerSocket(port);
@@ -75,7 +78,7 @@ public class Tracker implements Runnable {
             case COMPLETED:
 
                 // must be submitting a new file
-                if (!peerLists.containsKey(fileName)){
+                if (!peerLists.containsKey(fileName)) {
                     peers = new ArrayList<>();
                     peers.add(peer);
                     peerLists.put(fileName, peers);
@@ -128,7 +131,7 @@ public class Tracker implements Runnable {
                 peers = peerLists.get(fileName);
                 startTimer(fileName, peer);
                 return new TrackerResponse(TIMEOUT, peers.size(), 0, peers);
-        }     
+        }
 
         // if it gets this far, then it's either a malformed request
         // or it's just an ACK
@@ -137,9 +140,9 @@ public class Tracker implements Runnable {
 
     public void stopTimer(String fileName, Peer peer) {
         ConcurrentHashMap<Peer, Timer> timers;
-        if (timerList.contains(fileName)){
+        if (timerList.contains(fileName)) {
             timers = timerList.get(fileName);
-            if (timers.contains(peer)){
+            if (timers.contains(peer)) {
                 // TODO: is this mutable?
                 timers.remove(peer);
             }
@@ -150,7 +153,7 @@ public class Tracker implements Runnable {
         ConcurrentHashMap<Peer, Timer> timers;
 
         stopTimer(fileName, peer);
-        if (!timerList.contains(fileName)){
+        if (!timerList.contains(fileName)) {
             timerList.put(fileName, new ConcurrentHashMap<Peer, Timer>());
         }
 
@@ -172,9 +175,9 @@ public class Tracker implements Runnable {
         }
 
         public void run() {
-            if (peerLists.contains(fileName)){
+            if (peerLists.contains(fileName)) {
                 List<Peer> peers = peerLists.get(fileName);
-                if (peers.contains(peer)){
+                if (peers.contains(peer)) {
                     // TODO: is this mutable?
                     peers.remove(peer);
                 }
