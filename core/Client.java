@@ -11,8 +11,7 @@ import utils.DataFile;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,10 +28,10 @@ public class Client {
     private static Inet4Address trackerAddr;
     private static int trackerPort;
 
-    private HashMap<Peer, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
-    private HashMap<Peer, Socket> connections;                  // maintain TCP state of each p2p connection
+    private ConcurrentHashMap<Peer, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
+    private ConcurrentHashMap<Peer, Socket> connections;                  // maintain TCP state of each p2p connection
     //    private HashMap<String, DataFile> files;                    // maintain map of filenames to files
-    private HashSet<Peer> peers;                                // list of all peers
+    private ConcurrentHashMap.KeySetView<Peer, Boolean> peers;                                // list of all peers
     private int clientPort;
     private int listenPort;
     private String clientName;
@@ -40,20 +39,22 @@ public class Client {
     private DataFile dataFile;
 
     public Client(String clientName, int clientPort, int listenPort, DataFile dataFile) {
-        this.connectionStates = new HashMap<>();
-        this.connections = new HashMap<>();
-        this.peers = new HashSet<>();
+        this.connectionStates = new ConcurrentHashMap<>();
+        this.connections = new ConcurrentHashMap<>();
+        this.peers = ConcurrentHashMap.newKeySet();
         this.clientName = clientName;
         this.clientPort = clientPort;
         this.listenPort = listenPort;
         this.dataFile = dataFile;
     }
 
-    /***** ONLY FOR TESTING *****/
+    /*****
+     * ONLY FOR TESTING
+     *****/
     public Client(String clientName, int clientPort, int listenPort, DataFile dataFile, Peer peer) {
-        this.connectionStates = new HashMap<>();
-        this.connections = new HashMap<>();
-        this.peers = new HashSet<>();
+        this.connectionStates = new ConcurrentHashMap<>();
+        this.connections = new ConcurrentHashMap<>();
+        this.peers = ConcurrentHashMap.newKeySet();
         this.clientName = clientName;
         this.clientPort = clientPort;
         this.listenPort = listenPort;
@@ -62,10 +63,10 @@ public class Client {
     }
 
     public static void main(String[] args) {
-//        if (args.length != 4) {
-//            System.out.println(CMD_USAGE);
-//            return;
-//        }
+        //        if (args.length != 4) {
+        //            System.out.println(CMD_USAGE);
+        //            return;
+        //        }
         if (args.length != 7) {
             System.out.println(CMD_USAGE);
             return;
