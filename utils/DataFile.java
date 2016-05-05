@@ -9,12 +9,11 @@ import java.io.RandomAccessFile;
 public class DataFile {
     //    public static final int PIECE_LENGTH = 512000;
     public static final String MODE = "rw";
-
-    private String filename;        // treat as unique identifier for file
     private final long fileLength;
     private final int pieceLength;
     private final int numPieces;
     private final RandomAccessFile file;
+    private String filename;        // treat as unique identifier for file
     private byte[] bitfield;
 
     // TODO: send pieces in blocks (and maintain internal bitfield with block-granularity?)

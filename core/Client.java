@@ -144,17 +144,17 @@ public class Client {
                 sendBitfield(peer);
                 break;
             case INTERESTED_ID:
-            break;
+                break;
             case NOT_INTERESTED_ID:
-            break;
+                break;
             case HAVE_ID:
-            break;
+                break;
             case REQUEST_ID:
-            break;
+                break;
             case PIECE_ID:
-            break;
+                break;
             case BITFIELD_ID:
-            break;
+                break;
             case CHOKE_ID:
                 break;
             case UNCHOKE_ID:

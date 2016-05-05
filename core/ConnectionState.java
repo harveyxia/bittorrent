@@ -72,7 +72,9 @@ public class ConnectionState {
         this.bitfield = bitfield;
     }
 
-    /********************** DOWNLOAD ***********************/
+    /**********************
+     * DOWNLOAD
+     ***********************/
 
     public boolean canDownloadFrom() {
         return amInterested && !peerChoking;

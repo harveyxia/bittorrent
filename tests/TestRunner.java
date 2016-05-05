@@ -8,20 +8,20 @@ public class TestRunner {
     public static void main(String[] args) {
         Class[] classes = {MetafileUtilsTest.class, MessageParserTest.class, MessageBuilderTest.class};
 
-        System.out.println("\n=================="  );
-        System.out.println(  "    begin test    "  );
-        System.out.println(  "==================\n");
+        System.out.println("\n==================");
+        System.out.println("    begin test    ");
+        System.out.println("==================\n");
 
         Result result = JUnitCore.runClasses(classes);
         for (Failure failure : result.getFailures()) {
             System.out.println(failure.toString());
         }
 
-        System.out.println("\n=================="  );
+        System.out.println("\n==================");
         if (result.wasSuccessful())
-          System.out.println(" tests successful "  );
+            System.out.println(" tests successful ");
         else
-          System.out.println(" tests failed.... "  );
-        System.out.println(  "==================\n");
+            System.out.println(" tests failed.... ");
+        System.out.println("==================\n");
     }
 }
