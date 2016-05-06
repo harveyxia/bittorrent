@@ -17,7 +17,7 @@ public class State {
         return choked;
     }
 
-    public void setChoked(boolean choked) {
+    public synchronized void setChoked(boolean choked) {
         this.choked = choked;
     }
 
@@ -25,7 +25,7 @@ public class State {
         return interested;
     }
 
-    public void setInterested(boolean interested) {
+    public synchronized void setInterested(boolean interested) {
         this.interested = interested;
     }
 
