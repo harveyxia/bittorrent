@@ -52,9 +52,14 @@ public class DataFile {
         }
     }
 
-    public void writeAt(byte[] data, long pos) throws IOException {
-        file.seek(pos);
-        file.write(data);
+    public void writePiece(byte[] data, int pieceIndex) {
+        long pos = pieceIndex * pieceLength;
+        try {
+            file.seek(pos);
+            file.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void close() throws IOException {
