@@ -28,7 +28,7 @@ public class Client {
     private static Inet4Address trackerAddr;
     private static int trackerPort;
 
-    private ConcurrentHashMap<Peer, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
+    private ConcurrentHashMap<Peer, Connection> connectionStates;    // maintain bittorrent state of each p2p connection
     private int clientPort;
     private int listenPort;
     private String clientName;
@@ -122,7 +122,7 @@ public class Client {
                             Socket peerSocket = socket.accept();
                             logOutput("accepted new connection from " + peerSocket.getInetAddress() + " at port " + peerSocket.getPort());
                             Peer peer = new Peer(peerSocket.getInetAddress(), peerSocket.getPort());
-                            connectionStates.put(peer, ConnectionState.getInitialState(peerSocket));
+                            connectionStates.put(peer, Connection.getInitialState(peerSocket));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -170,7 +170,7 @@ public class Client {
     }
 
     public void respondToMessage(Message message, Peer peer) {
-        ConnectionState peerState = connectionStates.get(peer);
+        Connection peerState = connectionStates.get(peer);
         switch (message.getMessageID()) {
             case HANDSHAKE_ID:
                 logOutput("receive Handshake for " + message.getFilename() + " from " + peer);
@@ -181,19 +181,15 @@ public class Client {
                 break;
             case INTERESTED_ID:
                 logOutput("receive Interested from " + peer);
-                peerState.setPeerInterested(true);
                 break;
             case NOT_INTERESTED_ID:
                 logOutput("receive Not Interested from " + peer);
-                peerState.setPeerInterested(false);
                 break;
             case CHOKE_ID:
                 logOutput("receive Choke from " + peer);
-                peerState.setPeerChoking(true);
                 break;
             case UNCHOKE_ID:
                 logOutput("receive Unchoke from " + peer);
-                peerState.setPeerChoking(false);
                 break;
             case HAVE_ID:
                 logOutput("receive Have for " + message.getPieceIndex() + " from " + peer);
@@ -230,7 +226,7 @@ public class Client {
         try {
             logOutput("connecting to " + peer.getIp() + " at port " + peer.getPort());
             Socket socket = new Socket(peer.getIp(), peer.getPort(), InetAddress.getLocalHost(), clientPort);
-            connectionStates.put(peer, ConnectionState.getInitialState(socket));
+            connectionStates.put(peer, Connection.getInitialState(socket));
             sendHandshake(peer, filename);
             sendBitfield(peer);
         } catch (IOException e) {
@@ -242,7 +238,7 @@ public class Client {
      * Requests from peer the first missing piece that peer has.
      */
     public void requestFirstAvailPiece(Peer peer) {
-        ConnectionState peerState = connectionStates.get(peer);
+        Connection peerState = connectionStates.get(peer);
         for (int i = 0; i < dataFile.getNumPieces(); i++) {
             if (dataFile.missingPiece(i) && peerState.hasPiece(i)) {
                 sendRequest(peer, i, 0, dataFile.getPieceLength()); // request entire piece
