@@ -1,5 +1,7 @@
 package core;
 
+import message.Bitfield;
+
 import java.net.Socket;
 
 /**
@@ -12,7 +14,7 @@ public class Connection {
     private State downloadState;
     private State uploadState;
 
-    private byte[] bitfield;            // bitfield of the peer
+    private Bitfield bitfield;            // bitfield of the peer
     private Socket socket;
 
     public Connection(Socket socket, boolean established, State downloadState, State uploadState) {
@@ -40,36 +42,6 @@ public class Connection {
         return socket;
     }
 
-    /************
-     * BITFIELD
-     * **********/
-
-    /**
-     * Return true iff bitfield[pieceIndex] == 1, meaning that piece has been acquired.
-     */
-    public boolean hasPiece(int pieceIndex) {
-        return bitfield[pieceIndex] == 1;
-    }
-
-    /**
-     * Return true iff bitfield[pieceIndex] == 0, meaning that piece is not requested or possessed.
-     */
-    public boolean missingPiece(int pieceIndex) {
-        return bitfield[pieceIndex] == 0;
-    }
-
-    public void setPieceToHave(int pieceIndex) {
-        bitfield[pieceIndex] = 1;
-    }
-
-    public byte[] getBitfield() {
-        return bitfield;
-    }
-
-    public void setBitfield(byte[] bitfield) {
-        this.bitfield = bitfield;
-    }
-
     /**********************
      * DOWNLOAD
      ***********************/
@@ -88,5 +60,13 @@ public class Connection {
 
     public State getUploadState() {
         return uploadState;
+    }
+
+    public Bitfield getBitfield() {
+        return bitfield;
+    }
+
+    public void setBitfield(Bitfield bitfield) {
+        this.bitfield = bitfield;
     }
 }

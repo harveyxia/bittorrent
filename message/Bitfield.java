@@ -11,8 +11,37 @@ public class Bitfield {
         this.bitfield = bitfield;
     }
 
-    public byte[] getBitfield() {
+    public byte[] getByteArray() {
         return bitfield;
+    }
+
+    /**
+     * Return true iff bitfield[pieceIndex] == 1, meaning that piece has been acquired.
+     */
+    public boolean hasPiece(int pieceIndex) {
+        return bitfield[pieceIndex] == 1;
+    }
+
+    /**
+     * Return true iff bitfield[pieceIndex] == 2, meaning that piece has been requested.
+     */
+    public boolean requestedPiece(int pieceIndex) {
+        return bitfield[pieceIndex] == 2;
+    }
+
+    /**
+     * Return true iff bitfield[pieceIndex] == 0, meaning that piece is not requested or possessed.
+     */
+    public boolean missingPiece(int pieceIndex) {
+        return bitfield[pieceIndex] == 0;
+    }
+
+    public void setPieceToCompleted(int pieceIndex) {
+        bitfield[pieceIndex] = 1;
+    }
+
+    public void setPieceToRequested(int pieceIndex) {
+        bitfield[pieceIndex] = 2;
     }
 
     public String toString() {
@@ -22,4 +51,5 @@ public class Bitfield {
         }
         return bitfieldString;
     }
+
 }

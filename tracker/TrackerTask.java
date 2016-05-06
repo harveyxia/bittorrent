@@ -80,7 +80,7 @@ public class TrackerTask implements Runnable {
     }
 
     private void sendBitfield(Connection connection, Datafile datafile) {
-        byte[] bitfieldMessage = MessageBuilder.buildBitfield(datafile.getBitfield());
+        byte[] bitfieldMessage = MessageBuilder.buildBitfield(datafile.getBitfield().getByteArray());
         MessageSender.sendMessage(connection.getSocket(), bitfieldMessage);
     }
 }

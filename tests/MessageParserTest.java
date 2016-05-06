@@ -62,7 +62,7 @@ public class MessageParserTest {
         InputStream is = new ByteArrayInputStream(requestMessage);
         assertEquals(Message.MessageID.BITFIELD_ID.ordinal(), MessageParser.readIntFromStream(is));
         Message message = MessageParser.parseBitfield(is);
-        assertArrayEquals(expectedBitfield.getBitfield(), message.getBitfield().getBitfield());
+        assertArrayEquals(expectedBitfield.getByteArray(), message.getBitfield().getByteArray());
     }
 
     @Test

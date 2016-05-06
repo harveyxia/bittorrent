@@ -1,5 +1,6 @@
 package core;
 
+import message.Bitfield;
 import message.MessageBuilder;
 import message.Piece;
 import utils.Datafile;
@@ -52,7 +53,7 @@ public class Download {
                              ConcurrentMap<Peer, Connection> connections,
                              Datafile datafile,
                              Piece piece) {
-        datafile.setPieceToCompleted(piece.getPieceIndex());                // update bitfield
+        datafile.getBitfield().setPieceToCompleted(piece.getPieceIndex());                // update bitfield
         datafile.writePiece(piece.getBlock(), piece.getPieceIndex());       // write piece
         // Broadcast HAVE message for new pieceIndex to all other peers
         for (Map.Entry<Peer, Connection> peerConnection : connections.entrySet()) {
@@ -63,11 +64,28 @@ public class Download {
         }
     }
 
+    public void receiveBitfield(Connection connection, Datafile datafile, Bitfield bitfield) {
+        connection.setBitfield(bitfield);               // set peer's bitfield
+        requestFirstAvailPiece(connection, datafile);   // request first available piece
+    }
+
     // assume that pieces are downloaded in one go
     public void sendRequest(Connection connection, int pieceIndex, int pieceLength) {
         byte[] requestMessage = MessageBuilder.buildRequest(pieceIndex, 0, pieceLength);
         MessageSender.sendMessage(connection.getSocket(), requestMessage);
         logger.log(String.format(" send REQUEST for pieceIndex:%d, pieceLength:%d to " +
                 connection.getSocket().getInetAddress(), pieceIndex, pieceLength));
+    }
+
+    /**
+     * Requests from peer the first missing piece that peer has.
+     */
+    private void requestFirstAvailPiece(Connection connection, Datafile datafile) {
+        for (int i = 0; i < datafile.getNumPieces(); i++) {
+            if (datafile.getBitfield().missingPiece(i) && connection.getBitfield().hasPiece(i)) {
+                sendRequest(connection, i, datafile.getPieceLength()); // request entire piece
+                break;
+            }
+        }
     }
 }
