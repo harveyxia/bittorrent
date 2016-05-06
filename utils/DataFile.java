@@ -39,7 +39,7 @@ public class Datafile {
         }
     }
 
-    public void writePiece(byte[] data, int pieceIndex) {
+    public synchronized void writePiece(byte[] data, int pieceIndex) {
         long pos = pieceIndex * pieceLength;
         try {
             file.seek(pos);
