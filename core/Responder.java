@@ -15,7 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class Responder implements Runnable {
 
-    private final Download download;
+    private final Downloader downloader;
     private ConcurrentMap<Peer, Connection> connections;
     private Datafile datafile;
     private ScheduledExecutorService executor;
@@ -26,7 +26,7 @@ public class Responder implements Runnable {
         this.datafile = datafile;
         this.executor = executor;
         this.logger = logger;
-        this.download = new Download(logger);
+        this.downloader = new Downloader(logger);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class Responder implements Runnable {
                     }
                     Message message = MessageParser.parseMessage(input);
                     logger.log(message.toString());
-                    executor.submit(new RespondTask(download, connection, connections, message, datafile));
+                    executor.submit(new RespondTask(downloader, connection, connections, message, datafile));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -13,11 +13,11 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Handles this peer downloading from other peers.
  */
-public class Download {
+public class Downloader {
 
     private Logger logger;
 
-    public Download(Logger logger) {
+    public Downloader(Logger logger) {
         this.logger = logger;
     }
 

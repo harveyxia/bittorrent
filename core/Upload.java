@@ -3,7 +3,7 @@ package core;
 /**
  * Uploader protocol functions.
  */
-public class Upload {
+public class Uploader {
 
     public static void receivedInterested(Client client, Peer peer, Connection connection, State state) {
         if (!state.isInterested() && state.isChoked()) {
