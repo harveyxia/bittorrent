@@ -54,8 +54,8 @@ public class Download {
                              ConcurrentMap<Peer, Connection> connections,
                              Datafile datafile,
                              Piece piece) {
-        datafile.getBitfield().setPieceToCompleted(piece.getPieceIndex());                // update bitfield
-        datafile.writePiece(piece.getBlock(), piece.getPieceIndex());       // write piece
+        datafile.getBitfield().setPieceToCompleted(piece.getPieceIndex());                 // 1. update bitfield
+        datafile.writePiece(piece.getBlock(), piece.getPieceIndex());                      // 2. write piece
         // Broadcast HAVE message for new pieceIndex to all other peers
         for (Map.Entry<Peer, Connection> peerConnection : connections.entrySet()) {
             if (!peerConnection.getValue().equals(connection)) {
@@ -63,6 +63,8 @@ public class Download {
                 logger.log(" send HAVE to " + peerConnection.getKey());
             }
         }
+        requestFirstAvailPiece(connection, datafile);                                       // 3. request next piece
+        // TODO: what to do when completed
     }
 
     public void receiveBitfield(Connection connection, Bitfield bitfield) {
@@ -83,6 +85,10 @@ public class Download {
      * Requests from peer the first missing piece that peer has.
      */
     private void requestFirstAvailPiece(Connection connection, Datafile datafile) {
+        if (datafile.isCompleted()) {
+            logger.log(" datafile is complete! WOOOOOOOOOOOO!");
+            return;
+        }
         for (int i = 0; i < datafile.getNumPieces(); i++) {
             if (datafile.getBitfield().missingPiece(i) && connection.getBitfield().hasPiece(i)) {
                 sendRequest(connection, i, datafile.getPieceLength()); // request entire piece

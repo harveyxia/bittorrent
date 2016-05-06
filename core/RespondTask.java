@@ -40,6 +40,7 @@ public class RespondTask implements Runnable {
                 break;
             case INTERESTED_ID:
                 // upload
+                // explicitly reject interested by sending choked?
                 break;
             case NOT_INTERESTED_ID:
                 // upload

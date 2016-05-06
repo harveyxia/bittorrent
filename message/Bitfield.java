@@ -44,6 +44,19 @@ public class Bitfield {
         bitfield[pieceIndex] = 2;
     }
 
+
+    /**
+     * Return true if all bitfield slots are 1.
+     */
+    public boolean isCompleted() {
+        for (int i = 0; i < bitfield.length; i++) {
+            if (bitfield[i] == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public String toString() {
         String bitfieldString = "";
         for (int i = 0; i < bitfield.length; i++) {

@@ -72,4 +72,6 @@ public class Datafile {
     public String getFilename() {
         return filename;
     }
+
+    public boolean isCompleted() { return bitfield.isCompleted(); }
 }
