@@ -7,11 +7,11 @@ import message.Message;
  */
 public class Task implements Runnable {
 
-    private ConnectionState connectionState;
+    private Connection connection;
     private Message message;
 
-    public Task(ConnectionState connectionState, Message message) {
-        this.connectionState = connectionState;
+    public Task(Connection connection, Message message) {
+        this.connection = connection;
         this.message = message;
     }
 
