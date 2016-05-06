@@ -1,26 +1,39 @@
 package core;
 
+import message.MessageBuilder;
+import utils.DataFile;
+import utils.Logger;
+import utils.MessageSender;
+
 /**
  * Uploader protocol functions.
  */
 public class Uploader {
 
-    public static void receivedInterested(Client client, Peer peer, Connection connection, State state) {
+    private Logger logger;
+
+    public Uploader(Logger logger) {
+        this.logger = logger;
+    }
+
+    public void receiveInterested(Connection connection) {
+        State state = connection.getUploadState();
         if (!state.isInterested() && state.isChoked()) {
             state.setInterested(true);
         }
     }
 
-    public static void receivedUninterested(Client client, Peer peer, Connection connection, State state) {
+    public void receiveUninterested(Connection connection) {
+        State state = connection.getUploadState();
         if (state.isInterested() && state.isChoked()) {
             state.setInterested(false);
         }
     }
 
-    public static void receivedRequest(Client client, Peer peer, Connection connection, State state) {
-        // TODO: send piece from file (but how do we know which file? what if we're connected to this peer for more than one file?)
-        if (state.isInterested() && !state.isChoked()) {
-//            client.sendPiece(peer, );
+    public void receiveRequest(Connection connection, DataFile dataFile, int pieceIndex) {
+        if (connection.canUploadTo()) {
+            byte[] pieceMessage = MessageBuilder.buildPiece(pieceIndex, 0, dataFile.readPiece(pieceIndex));
+            MessageSender.sendMessage(connection.getSocket(), pieceMessage);
         }
     }
 

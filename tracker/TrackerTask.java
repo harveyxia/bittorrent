@@ -3,7 +3,7 @@ package tracker;
 import core.Connection;
 import core.Peer;
 import message.MessageBuilder;
-import utils.Datafile;
+import utils.DataFile;
 import utils.Logger;
 import utils.MessageSender;
 
@@ -74,12 +74,12 @@ public class TrackerTask implements Runnable {
         }
     }
 
-    private void sendHandshake(Connection connection, Datafile datafile) {
+    private void sendHandshake(Connection connection, DataFile datafile) {
         byte[] handshakeMessage = MessageBuilder.buildHandshake(datafile.getFilename());
         MessageSender.sendMessage(connection.getSocket(), handshakeMessage);
     }
 
-    private void sendBitfield(Connection connection, Datafile datafile) {
+    private void sendBitfield(Connection connection, DataFile datafile) {
         byte[] bitfieldMessage = MessageBuilder.buildBitfield(datafile.getBitfield().getByteArray());
         MessageSender.sendMessage(connection.getSocket(), bitfieldMessage);
     }

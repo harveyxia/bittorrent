@@ -3,7 +3,7 @@ package core;
 import message.Bitfield;
 import message.MessageBuilder;
 import message.Piece;
-import utils.Datafile;
+import utils.DataFile;
 import utils.Logger;
 import utils.MessageSender;
 
@@ -44,7 +44,7 @@ public class Downloader {
         logger.log(" receive CHOKE from " + connection.getSocket());
     }
 
-    public void receiveUnchoke(Connection connection, Datafile datafile) {
+    public void receiveUnchoke(Connection connection, DataFile datafile) {
         connection.getDownloadState().setChoked(false);
         logger.log(" receive UNCHOKE from " + connection.getSocket());
         requestFirstAvailPiece(connection, datafile);   // request first available piece
@@ -52,7 +52,7 @@ public class Downloader {
 
     public void receivePiece(Connection connection,
                              ConcurrentMap<Peer, Connection> connections,
-                             Datafile datafile,
+                             DataFile datafile,
                              Piece piece) {
         datafile.getBitfield().setPieceToCompleted(piece.getPieceIndex());                  // 1. update bitfield
         datafile.writePiece(piece.getBlock(), piece.getPieceIndex());                       // 2. write piece
@@ -88,7 +88,7 @@ public class Downloader {
     /**
      * Requests from peer the first missing piece that peer has.
      */
-    private void requestFirstAvailPiece(Connection connection, Datafile datafile) {
+    private void requestFirstAvailPiece(Connection connection, DataFile datafile) {
         if (datafile.isCompleted()) {
             logger.log(" datafile is complete! WOOOOOOOOOOOO!");
             return;

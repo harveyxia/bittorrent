@@ -3,7 +3,7 @@ package core;
 import message.Bitfield;
 import message.Message;
 import message.MessageBuilder;
-import utils.Datafile;
+import utils.DataFile;
 import utils.MessageSender;
 
 import java.util.concurrent.ConcurrentMap;
@@ -15,17 +15,20 @@ public class RespondTask implements Runnable {
 
     private Connection connection;
     private Message message;
-    private Datafile datafile;
+    private DataFile datafile;
 
     private Downloader downloader;
+    private Uploader uploader;
     private ConcurrentMap<Peer, Connection> connections; // only used for case PIECE_ID
 
     public RespondTask(Downloader downloader,
+                       Uploader uploader,
                        Connection connection,
                        ConcurrentMap<Peer, Connection> connections,
                        Message message,
-                       Datafile datafile) {
+                       DataFile datafile) {
         this.downloader = downloader;
+        this.uploader = uploader;
         this.connection = connection;
         this.connections = connections;
         this.message = message;
@@ -39,17 +42,17 @@ public class RespondTask implements Runnable {
                 sendBitfield(connection, datafile.getBitfield());
                 break;
             case INTERESTED_ID:
-                // upload
-                // explicitly reject interested by sending choked?
+                // TODO: explicitly reject interested by sending choked?
+                uploader.receiveInterested(connection);
                 break;
             case NOT_INTERESTED_ID:
-                // upload
+                uploader.receiveUninterested(connection);
                 break;
             case HAVE_ID:
                 updatePeerBitfield(connection, message.getPieceIndex());
                 break;
             case REQUEST_ID:
-                // upload
+                uploader.receiveRequest(connection, datafile, message.getPieceIndex());
                 break;
             case PIECE_ID:
                 downloader.receivePiece(connection, connections, datafile, message.getPiece());

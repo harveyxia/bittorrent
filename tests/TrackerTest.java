@@ -3,8 +3,6 @@ package tests;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.InetAddress;
-import java.net.Socket;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -13,7 +11,7 @@ import tracker.*;
 import core.Peer;
 
 import org.junit.Test;
-import utils.Datafile;
+import utils.DataFile;
 
 import static org.junit.Assert.*;
 
@@ -27,14 +25,14 @@ public class TrackerTest {
   public static final String DIRECTORY = "someDirectory";
   public static final int FILE_LENGTH = 0;
   public static final int PIECE_LENGTH = 0;
-  private Datafile datafile;
+  private DataFile datafile;
 
   // private InetAddress localHost;
 
   @Before
   public void setUp() {
     try {
-      this.datafile = new Datafile(true, FILE_NAME, DIRECTORY, FILE_LENGTH, PIECE_LENGTH);
+      this.datafile = new DataFile(true, FILE_NAME, DIRECTORY, FILE_LENGTH, PIECE_LENGTH);
     } catch (IOException e) {
       e.printStackTrace();
     }

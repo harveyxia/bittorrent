@@ -2,7 +2,7 @@ package core;
 
 import message.Message;
 import message.MessageParser;
-import utils.Datafile;
+import utils.DataFile;
 import utils.Logger;
 
 import java.io.IOException;
@@ -17,11 +17,11 @@ public class Responder implements Runnable {
 
     private final Downloader downloader;
     private ConcurrentMap<Peer, Connection> connections;
-    private Datafile datafile;
+    private DataFile datafile;
     private ScheduledExecutorService executor;
     private Logger logger;
 
-    public Responder(ConcurrentMap<Peer, Connection> connections, Datafile datafile, ScheduledExecutorService executor, Logger logger) {
+    public Responder(ConcurrentMap<Peer, Connection> connections, DataFile datafile, ScheduledExecutorService executor, Logger logger) {
         this.connections = connections;
         this.datafile = datafile;
         this.executor = executor;
