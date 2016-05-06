@@ -6,13 +6,13 @@ import utils.DataFile;
 /**
  * Delegates events based on received message type.
  */
-public class Task implements Runnable {
+public class RespondTask implements Runnable {
 
     private Connection connection;
     private Message message;
     private DataFile datafile;
 
-    public Task(Connection connection, Message message, DataFile datafile) {
+    public RespondTask(Connection connection, Message message, DataFile datafile) {
         this.connection = connection;
         this.message = message;
         this.datafile = datafile;
