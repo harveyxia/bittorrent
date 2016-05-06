@@ -52,6 +52,7 @@ public class Tracker implements Runnable {
     public void run() {
         while (run) {
             try (Socket socket = welcomeSocket.accept()) {
+                System.out.println("Accepted new connection from " + socket.getInetAddress());
                 OutputStream out = socket.getOutputStream();
                 InputStream in = socket.getInputStream();
                 TrackerRequest req = TrackerRequest.fromStream(in);
@@ -86,7 +87,7 @@ public class Tracker implements Runnable {
 
         switch (event) {
             case COMPLETED:
-
+                System.out.println("completed");
                 // must be submitting a new file
                 if (!peerLists.containsKey(fileName)) {
                     peers = new HashSet<>();
@@ -101,7 +102,7 @@ public class Tracker implements Runnable {
                 return null;
 
             case STARTED:
-
+                System.out.println("started");
                 // starting a new session but file doesn't exist
                 if (!peerLists.containsKey(fileName)) {
                     return new TrackerResponse(TIMEOUT, 0, 0, null);
@@ -120,7 +121,7 @@ public class Tracker implements Runnable {
                 return new TrackerResponse(TIMEOUT, peers.size(), 0, peers);
 
             case STOPPED:
-
+                System.out.println("stopped");
                 // stupid request
                 if (!peerLists.containsKey(fileName)) {
                     break;

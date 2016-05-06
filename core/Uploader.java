@@ -1,7 +1,7 @@
 package core;
 
 import message.MessageBuilder;
-import utils.DataFile;
+import utils.Datafile;
 import utils.Logger;
 import utils.MessageSender;
 
@@ -32,12 +32,12 @@ public class Uploader {
         }
     }
 
-    public void receiveRequest(Connection connection, DataFile dataFile, int pieceIndex) {
+    public void receiveRequest(Connection connection, Datafile datafile, int pieceIndex) {
         if (!connection.canUploadTo()) {
             logger.log(" ERROR: cannot upload to " + connection.getSocket().getInetAddress());
             return;
         }
-        byte[] pieceMessage = MessageBuilder.buildPiece(pieceIndex, 0, dataFile.readPiece(pieceIndex));
+        byte[] pieceMessage = MessageBuilder.buildPiece(pieceIndex, 0, datafile.readPiece(pieceIndex));
         MessageSender.sendMessage(connection.getSocket(), pieceMessage);
         logger.log(String.format(" receive REQUEST for pieceIndex:%d from " +
                 connection.getSocket().getInetAddress(), pieceIndex));

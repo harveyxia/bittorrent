@@ -3,7 +3,7 @@ package core;
 import message.Bitfield;
 import message.Message;
 import message.MessageBuilder;
-import utils.DataFile;
+import utils.Datafile;
 import utils.MessageSender;
 
 import java.util.concurrent.ConcurrentMap;
@@ -15,7 +15,7 @@ public class RespondTask implements Runnable {
 
     private Connection connection;
     private Message message;
-    private DataFile datafile;
+    private Datafile datafile;
 
     private Downloader downloader;
     private Uploader uploader;
@@ -26,7 +26,7 @@ public class RespondTask implements Runnable {
                        Connection connection,
                        ConcurrentMap<Peer, Connection> connections,
                        Message message,
-                       DataFile datafile) {
+                       Datafile datafile) {
         this.downloader = downloader;
         this.uploader = uploader;
         this.connection = connection;

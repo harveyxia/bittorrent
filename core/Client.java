@@ -3,7 +3,7 @@ package core;
 import metafile.MetaFile;
 import tracker.TrackerClient;
 import tracker.TrackerTask;
-import utils.DataFile;
+import utils.Datafile;
 import utils.Logger;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class Client {
         Logger logger = new Logger(args[0]);
         int port = Integer.parseInt(args[1]);
         MetaFile metaFile = MetaFile.parseMetafile(args[2]);
-        DataFile datafile = new DataFile(false,
+        Datafile datafile = new Datafile(false,
                 metaFile.getInfo().getFilename(),
                 args[3],
                 metaFile.getInfo().getFileLength(),

@@ -11,7 +11,7 @@ import tracker.*;
 import core.Peer;
 
 import org.junit.Test;
-import utils.DataFile;
+import utils.Datafile;
 
 import static org.junit.Assert.*;
 
@@ -25,14 +25,14 @@ public class TrackerTest {
   public static final String DIRECTORY = "someDirectory";
   public static final int FILE_LENGTH = 0;
   public static final int PIECE_LENGTH = 0;
-  private DataFile datafile;
+  private Datafile datafile;
 
   // private InetAddress localHost;
 
   @Before
   public void setUp() {
     try {
-      this.datafile = new DataFile(true, FILE_NAME, DIRECTORY, FILE_LENGTH, PIECE_LENGTH);
+      this.datafile = new Datafile(true, FILE_NAME, DIRECTORY, FILE_LENGTH, PIECE_LENGTH);
     } catch (IOException e) {
       e.printStackTrace();
     }

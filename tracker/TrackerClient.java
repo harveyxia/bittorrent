@@ -1,6 +1,6 @@
 package tracker;
 
-import utils.DataFile;
+import utils.Datafile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,9 +14,9 @@ import java.net.Socket;
 public class TrackerClient {
 
     private InetSocketAddress client, server;
-    private DataFile datafile;
+    private Datafile datafile;
 
-    public TrackerClient(InetSocketAddress client, InetSocketAddress server, DataFile datafile) {
+    public TrackerClient(InetSocketAddress client, InetSocketAddress server, Datafile datafile) {
         this.client = client;
         this.server = server;
         this.datafile = datafile;
@@ -43,7 +43,7 @@ public class TrackerClient {
         return server;
     }
 
-    public DataFile getDatafile() {
+    public Datafile getDatafile() {
         return datafile;
     }
 }

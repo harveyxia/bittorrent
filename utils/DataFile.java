@@ -11,7 +11,7 @@ import java.util.Arrays;
 /**
  * Wrapper around in-progress torrent data files.
  */
-public class DataFile {
+public class Datafile {
     public static final String MODE = "rws";    // Read and write synchronously for thread-safety
     private final long fileLength;
     private final int pieceLength;
@@ -21,7 +21,7 @@ public class DataFile {
     private final String filename;        // treat as unique identifier for file
     private final Bitfield bitfield;
 
-    public DataFile(boolean create, String filename, String directory, long fileLength, int pieceLength) throws IOException {
+    public Datafile(boolean create, String filename, String directory, long fileLength, int pieceLength) throws IOException {
         this.dataFolder = Paths.get(directory);
         this.filename = filename;
         this.fileLength = fileLength;
