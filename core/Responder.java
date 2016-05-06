@@ -2,7 +2,7 @@ package core;
 
 import message.Message;
 import message.MessageParser;
-import utils.DataFile;
+import utils.Datafile;
 import utils.Logger;
 
 import java.io.IOException;
@@ -15,16 +15,18 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class Responder implements Runnable {
 
+    private final Download download;
     private ConcurrentMap<Peer, Connection> connections;
-    private DataFile dataFile;
+    private Datafile datafile;
     private ScheduledExecutorService executor;
     private Logger logger;
 
-    public Responder(ConcurrentMap<Peer, Connection> connections, DataFile dataFile, ScheduledExecutorService executor, Logger logger) {
+    public Responder(ConcurrentMap<Peer, Connection> connections, Datafile datafile, ScheduledExecutorService executor, Logger logger) {
         this.connections = connections;
-        this.dataFile = dataFile;
+        this.datafile = datafile;
         this.executor = executor;
         this.logger = logger;
+        this.download = new Download(logger);
     }
 
     @Override
@@ -39,7 +41,7 @@ public class Responder implements Runnable {
                     }
                     Message message = MessageParser.parseMessage(input);
                     logger.log(message.toString());
-                    executor.submit(new RespondTask(connection, message, dataFile));
+                    executor.submit(new RespondTask(download, connection, connections, message, datafile));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

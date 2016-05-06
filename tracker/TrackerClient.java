@@ -1,6 +1,6 @@
 package tracker;
 
-import utils.DataFile;
+import utils.Datafile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,12 +14,12 @@ import java.net.Socket;
 public class TrackerClient {
 
     private InetSocketAddress client, server;
-    private DataFile dataFile;
+    private Datafile datafile;
 
-    public TrackerClient(InetSocketAddress client, InetSocketAddress server, DataFile dataFile) {
+    public TrackerClient(InetSocketAddress client, InetSocketAddress server, Datafile datafile) {
         this.client = client;
         this.server = server;
-        this.dataFile = dataFile;
+        this.datafile = datafile;
     }
 
     public TrackerResponse update(TrackerRequest.Event event) throws IOException {
@@ -29,7 +29,7 @@ public class TrackerClient {
             socket.connect(server);
             OutputStream out = socket.getOutputStream();
             InputStream in = socket.getInputStream();
-            TrackerRequest req = new TrackerRequest(event, client, dataFile.getFilename());
+            TrackerRequest req = new TrackerRequest(event, client, datafile.getFilename());
             req.send(out);
             return TrackerResponse.fromStream(in);
         }
@@ -43,7 +43,7 @@ public class TrackerClient {
         return server;
     }
 
-    public DataFile getDataFile() {
-        return dataFile;
+    public Datafile getDatafile() {
+        return datafile;
     }
 }

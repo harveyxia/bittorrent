@@ -3,7 +3,7 @@ package core;
 import metafile.MetaFile;
 import tracker.TrackerClient;
 import tracker.TrackerTask;
-import utils.DataFile;
+import utils.Datafile;
 import utils.Logger;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class Client {
         Logger logger = new Logger(args[0]);
         int port = Integer.parseInt(args[1]);
         MetaFile metaFile = MetaFile.parseMetafile(args[2]);
-        DataFile dataFile = new DataFile(false,
+        Datafile datafile = new Datafile(false,
                 metaFile.getInfo().getFilename(),
                 args[3],
                 metaFile.getInfo().getFileLength(),
@@ -37,12 +37,12 @@ public class Client {
         ConcurrentMap<Peer, Connection> connections = new ConcurrentHashMap<>();
         // probably shouldn't be local host if running on zoo or something
         InetSocketAddress client = new InetSocketAddress(InetAddress.getLocalHost(), port);
-        TrackerClient trackerClient = new TrackerClient(client, metaFile.getAnnounce(), dataFile);
+        TrackerClient trackerClient = new TrackerClient(client, metaFile.getAnnounce(), datafile);
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(NUM_THREADS);
         executor.submit(new TrackerTask(trackerClient, connections, executor, logger));
         executor.submit(new Welcomer(port, BACKLOG, connections, logger));
-        executor.submit(new Responder(connections, dataFile, executor, logger));
+        executor.submit(new Responder(connections, datafile, executor, logger));
     }
 }
 

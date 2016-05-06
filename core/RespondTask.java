@@ -1,7 +1,10 @@
 package core;
 
 import message.Message;
-import utils.DataFile;
+import utils.Datafile;
+import utils.Logger;
+
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Delegates events based on received message type.
@@ -10,10 +13,19 @@ public class RespondTask implements Runnable {
 
     private Connection connection;
     private Message message;
-    private DataFile datafile;
+    private Datafile datafile;
 
-    public RespondTask(Connection connection, Message message, DataFile datafile) {
+    private Download download;
+    private ConcurrentMap<Peer, Connection> connections; // only used for case PIECE_ID
+
+    public RespondTask(Download download,
+                       Connection connection,
+                       ConcurrentMap<Peer, Connection> connections,
+                       Message message,
+                       Datafile datafile) {
+        this.download = download;
         this.connection = connection;
+        this.connections = connections;
         this.message = message;
         this.datafile = datafile;
     }
@@ -30,18 +42,17 @@ public class RespondTask implements Runnable {
             case REQUEST_ID:
                 break;
             case PIECE_ID:
-                Download.receivePiece(connection, datafile, message.getPiece());
-                // TODO: broadcast HAVE to all peers
+                download.receivePiece(connection, connections, datafile, message.getPiece());
                 break;
             case BITFIELD_ID:
                 break;
             case HANDSHAKE_ID:
                 break;
             case CHOKE_ID:
-                Download.receiveChoke(connection);
+                download.receiveChoke(connection);
                 break;
             case UNCHOKE_ID:
-                Download.receiveUnchoke(connection);
+                download.receiveUnchoke(connection);
                 break;
         }
     }

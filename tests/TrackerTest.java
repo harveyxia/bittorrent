@@ -1,15 +1,20 @@
 package tests;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.List;
+import java.util.Set;
 
+import org.junit.Before;
 import tracker.TrackerRequest.Event;
 import tracker.*;
 import core.Peer;
 
 import org.junit.Test;
+import utils.Datafile;
+
 import static org.junit.Assert.*;
 
 /**
@@ -19,8 +24,21 @@ public class TrackerTest {
 
   private static final int TRACKER_PORT = 8888;
   private static final String FILE_NAME = "a";
+  public static final String DIRECTORY = "someDirectory";
+  public static final int FILE_LENGTH = 0;
+  public static final int PIECE_LENGTH = 0;
+  private Datafile datafile;
 
   // private InetAddress localHost;
+
+  @Before
+  public void setUp() {
+    try {
+      this.datafile = new Datafile(true, FILE_NAME, DIRECTORY, FILE_LENGTH, PIECE_LENGTH);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
 
   @Test
   public void testNewFile() throws Exception {
@@ -33,7 +51,7 @@ public class TrackerTest {
 
     TrackerClient trackerClientOne = new TrackerClient(
       new InetSocketAddress(LOCAL_HOST, client_port++),
-      new InetSocketAddress(LOCAL_HOST, tracker_port), FILE_NAME);
+      new InetSocketAddress(LOCAL_HOST, tracker_port), datafile);
 
     TrackerResponse resp;
 
@@ -76,15 +94,15 @@ public class TrackerTest {
 
     TrackerClient trackerClientOne = new TrackerClient(
       new InetSocketAddress(LOCAL_HOST, client_port++),
-      new InetSocketAddress(LOCAL_HOST, tracker_port), FILE_NAME);
+      new InetSocketAddress(LOCAL_HOST, tracker_port), datafile);
 
     TrackerClient trackerClientTwo = new TrackerClient(
       new InetSocketAddress(LOCAL_HOST, client_port++),
-      new InetSocketAddress(LOCAL_HOST, tracker_port), FILE_NAME);
+      new InetSocketAddress(LOCAL_HOST, tracker_port), datafile);
 
     TrackerClient trackerClientThree = new TrackerClient(
       new InetSocketAddress(LOCAL_HOST, client_port++),
-      new InetSocketAddress(LOCAL_HOST, tracker_port), FILE_NAME);
+      new InetSocketAddress(LOCAL_HOST, tracker_port), datafile);
 
     TrackerResponse resp;
 
@@ -120,11 +138,17 @@ public class TrackerTest {
     assertEquals("PING2 peer list", 3, resp.getPeers().size());
 
     // check to see if peers are logged correctly
-    List<Peer> peers = resp.getPeers();
-    for (int i = 0; i < peers.size(); i++) {
-      Peer peer = peers.get(i);
-      assertEquals("PEER" + i, LOCAL_HOST, peer.getIp());
-      assertEquals("PEER" + i, base_client_port + i, peer.getPort());
+    Set<Peer> peers = resp.getPeers();
+//    for (int i = 0; i < peers.size(); i++) {
+//      Peer peer = peers.get(i);
+//      assertEquals("PEER" + i, LOCAL_HOST, peer.getIp());
+//      assertEquals("PEER" + i, base_client_port + i, peer.getPort());
+//    }
+    int i = 0;
+    for (Peer peer : peers) {
+      assertEquals(peer.toString(), LOCAL_HOST, peer.getIp());
+      assertEquals(peer.toString(), base_client_port + i, peer.getPort());
+      i++;
     }
 
     // close one
@@ -140,10 +164,16 @@ public class TrackerTest {
 
     // check to see if peer 1 deleted properly
     peers = resp.getPeers();
-    for (int i = 0; i < peers.size(); i++) {
-      Peer peer = peers.get(i);
-      assertEquals("PEER" + i + 1, LOCAL_HOST, peer.getIp());
-      assertEquals("PEER" + i + 1, base_client_port + i + 1, peer.getPort());
+//    for (int i = 0; i < peers.size(); i++) {
+//      Peer peer = peers.get(i);
+//      assertEquals("PEER" + i + 1, LOCAL_HOST, peer.getIp());
+//      assertEquals("PEER" + i + 1, base_client_port + i + 1, peer.getPort());
+//    }
+    i = 0;
+    for (Peer peer : peers) {
+      assertEquals(peer.toString(), LOCAL_HOST, peer.getIp());
+      assertEquals(peer.toString(), base_client_port + i, peer.getPort());
+      i++;
     }
 
     // close three
@@ -158,7 +188,7 @@ public class TrackerTest {
     assertEquals("PING2 peer list", 1, resp.getPeers().size());
 
     // check to see if peer 3 deleted properly
-    Peer peer = resp.getPeers().get(0);
+    Peer peer = resp.getPeers().iterator().next();
     assertEquals("PEER2", LOCAL_HOST, peer.getIp());
     assertEquals("PEER2", base_client_port + 1, peer.getPort());
 
@@ -180,15 +210,15 @@ public class TrackerTest {
 
     TrackerClient trackerClientOne = new TrackerClient(
       new InetSocketAddress(LOCAL_HOST, client_port++),
-      new InetSocketAddress(LOCAL_HOST, tracker_port), FILE_NAME);
+      new InetSocketAddress(LOCAL_HOST, tracker_port), datafile);
 
     TrackerClient trackerClientTwo = new TrackerClient(
       new InetSocketAddress(LOCAL_HOST, client_port++),
-      new InetSocketAddress(LOCAL_HOST, tracker_port), FILE_NAME);
+      new InetSocketAddress(LOCAL_HOST, tracker_port), datafile);
 
     TrackerClient trackerClientThree = new TrackerClient(
       new InetSocketAddress(LOCAL_HOST, client_port++),
-      new InetSocketAddress(LOCAL_HOST, tracker_port), FILE_NAME);
+      new InetSocketAddress(LOCAL_HOST, tracker_port), datafile);
 
     TrackerResponse resp;
 
@@ -224,11 +254,17 @@ public class TrackerTest {
     assertEquals("PING3 peer list", 2, resp.getPeers().size());
 
     // check to see if peer 3 deleted properly
-    List<Peer> peers = resp.getPeers();
-    for (int i = 0; i < peers.size(); i++) {
-      Peer peer = peers.get(i);
-      assertEquals("PEER" + i, LOCAL_HOST, peer.getIp());
-      assertEquals("PEER" + i, base_client_port + i, peer.getPort());
+    Set<Peer> peers = resp.getPeers();
+//    for (int i = 0; i < peers.size(); i++) {
+//      Peer peer = peers.get(i);
+//      assertEquals("PEER" + i, LOCAL_HOST, peer.getIp());
+//      assertEquals("PEER" + i, base_client_port + i, peer.getPort());
+//    }
+    int i = 0;
+    for (Peer peer : peers) {
+      assertEquals(peer.toString(), LOCAL_HOST, peer.getIp());
+      assertEquals(peer.toString(), base_client_port + i, peer.getPort());
+      i++;
     }
 
     // Bring peer 3 back
