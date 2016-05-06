@@ -13,12 +13,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 
 
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,7 +24,7 @@ public class Tracker implements Runnable {
 
 
     private ServerSocket welcomeSocket;
-    private ConcurrentHashMap<String,List<Peer>> peerLists;
+    private ConcurrentHashMap<String,Set<Peer>> peerLists;
     private ConcurrentHashMap<String,ConcurrentHashMap<Peer, Timer>> timerList;
 
     private final static int TIMEOUT = 2; // timeout in seconds
@@ -38,8 +34,8 @@ public class Tracker implements Runnable {
         this.welcomeSocket = new ServerSocket(port);
         this.welcomeSocket.setSoTimeout(1000);
 
-        this.peerLists = new ConcurrentHashMap<String,List<Peer>>();
-        this.timerList = new ConcurrentHashMap<String,ConcurrentHashMap<Peer, Timer>>();
+        this.peerLists = new ConcurrentHashMap<>();
+        this.timerList = new ConcurrentHashMap<>();
         this.run = true;
     }
 
@@ -76,14 +72,14 @@ public class Tracker implements Runnable {
         InetSocketAddress addr = req.getAddr();
         String fileName = req.getFilename();
         Peer peer = new Peer(addr.getAddress(), addr.getPort());
-        List<Peer> peers = null;
+        Set<Peer> peers;
 
         switch (event) {
             case COMPLETED:
 
                 // must be submitting a new file
                 if (!peerLists.containsKey(fileName)) {
-                    peers = new ArrayList<>();
+                    peers = new HashSet<>();
                     peers.add(peer);
                     peerLists.put(fileName, peers);
                     startTimer(fileName, peer);
@@ -168,7 +164,7 @@ public class Tracker implements Runnable {
 
         stopTimer(fileName, peer);
         if (!timerList.containsKey(fileName)) {
-            timerList.put(fileName, new ConcurrentHashMap<Peer, Timer>());
+            timerList.put(fileName, new ConcurrentHashMap<>());
         }
 
         timers = timerList.get(fileName);
@@ -194,7 +190,7 @@ public class Tracker implements Runnable {
 
         public void run() {
             if (peerLists.containsKey(fileName)) {
-                List<Peer> peers = peerLists.get(fileName);
+                Set<Peer> peers = peerLists.get(fileName);
                 if (peers.contains(peer)) {
                     peers.remove(peer);
                     peerLists.put(fileName, peers);

@@ -1,14 +1,15 @@
 package core;
 
 import metafile.MetaFile;
+import tracker.TrackerClient;
+import tracker.TrackerTask;
 import utils.DataFile;
 import utils.Logger;
 
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.concurrent.*;
 
 /**
  * Executable for the client.
@@ -34,39 +35,17 @@ public class Client {
                 metaFile.getInfo().getFileLength(),
                 metaFile.getInfo().getPieceLength());
         ConcurrentMap<Peer, Connection> connections = new ConcurrentHashMap<>();
+        // probably shouldn't be local host if running on zoo or something
+        InetSocketAddress client = new InetSocketAddress(InetAddress.getLocalHost(), port);
+        TrackerClient trackerClient = new TrackerClient(client, metaFile.getAnnounce(), dataFile);
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(NUM_THREADS);
+        executor.submit(new TrackerTask(trackerClient, connections, executor, logger));
         executor.submit(new Welcomer(port, BACKLOG, connections, logger));
         executor.submit(new Responder(connections, dataFile, executor, logger));
     }
 }
 
-//    public TrackerResponse getTrackerResponse(String filename) throws IOException {
-//
-//        Socket socket = new Socket(trackerAddr, trackerPort);
-//
-//        // Send tracker request
-//        TrackerRequest request = new TrackerRequest(TrackerRequest.Event.STARTED, (InetSocketAddress) socket.getLocalSocketAddress(), filename);
-//        request.send(socket.getOutputStream());
-//
-//        // Receive tracker response
-//        return TrackerResponse.fromStream(socket.getInputStream());
-//    }
-//
-//    /**
-//     * Initiate connection to another peer.
-//     */
-//    public void connectToPeer(Peer peer, String filename) {
-//        try {
-//            logOutput("connecting to " + peer.getIp() + " at port " + peer.getPort());
-//            Socket socket = new Socket(peer.getIp(), peer.getPort(), InetAddress.getLocalHost(), clientPort);
-//            connectionStates.put(peer, Connection.getInitialState(socket));
-//            sendHandshake(peer, filename);
-//            sendBitfield(peer);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 //
 //    /**
 //     * Requests from peer the first missing piece that peer has.
@@ -88,30 +67,3 @@ public class Client {
 //        sendMessage(peer, requestMessage);
 //    }
 //
-//    public void sendHave(Peer peer) {
-//    }
-//
-//    public void sendChoke(Peer peer) {
-//    }
-//
-//    public void sendUnchoke(Peer peer) {
-//    }
-//
-//    public void sendInterested(Peer peer) {
-//    }
-//
-//    public void sendUninterested(Peer peer) {
-//    }
-//
-//    public void sendPiece(Peer peer, DataFile file, int index, int begin, int length) {
-//    }
-//
-//    public void sendHandshake(Peer peer, String filename) {
-//        byte[] handshakeMessage = MessageBuilder.buildHandshake(filename);
-//        sendMessage(peer, handshakeMessage);
-//    }
-//
-//    public void sendBitfield(Peer peer) {
-//        byte[] bitfieldMessage = MessageBuilder.buildBitfield(dataFile.getBitfield());
-//        sendMessage(peer, bitfieldMessage);
-//    }

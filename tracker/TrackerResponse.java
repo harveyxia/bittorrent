@@ -5,7 +5,9 @@ import core.Peer;
 import java.io.*;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by marvin on 5/2/16.
@@ -13,9 +15,9 @@ import java.util.List;
 public class TrackerResponse {
 
     private int interval, seeders, leechers;
-    private List<Peer> peers;
+    private Set<Peer> peers;
 
-    public TrackerResponse(int interval, int seeders, int leechers, List<Peer> peers) {
+    public TrackerResponse(int interval, int seeders, int leechers, Set<Peer> peers) {
         this.interval = interval;
         this.seeders = seeders;
         this.leechers = leechers;
@@ -30,7 +32,7 @@ public class TrackerResponse {
             int interval = dis.readInt();
             int seeders = dis.readInt();
             int leechers = dis.readInt();
-            List<Peer> peers = new ArrayList<>();
+            Set<Peer> peers = new HashSet<>();
             byte[] raw = new byte[4];
             for (int i = 0; i < seeders + leechers; i++) {
                 dis.read(raw);
@@ -72,7 +74,7 @@ public class TrackerResponse {
         return leechers;
     }
 
-    public List<Peer> getPeers() {
+    public Set<Peer> getPeers() {
         return peers;
     }
 }

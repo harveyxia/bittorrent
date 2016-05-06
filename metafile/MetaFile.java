@@ -3,6 +3,8 @@ package metafile;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -30,7 +32,9 @@ public class MetaFile {
             JSONObject infoJson = metafileJson.getJSONObject(INFO);
             Info info = parseInfoJson(infoJson);
             String announce = metafileJson.getString(ANNOUNCE);
-            return new MetaFile(info, announce);
+            InetAddress host = InetAddress.getByName(announce.substring(0, announce.indexOf(':')));
+            int port = Integer.parseInt(announce.substring(announce.indexOf(':') + 1));
+            return new MetaFile(info, new InetSocketAddress(host, port));
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -50,9 +54,9 @@ public class MetaFile {
     }
 
     private Info info;
-    private String announce;
+    private InetSocketAddress announce;
 
-    public MetaFile(Info info, String announce) {
+    private MetaFile(Info info, InetSocketAddress announce) {
         this.info = info;
         this.announce = announce;
     }
@@ -61,7 +65,7 @@ public class MetaFile {
         return info;
     }
 
-    public String getAnnounce() {
+    public InetSocketAddress getAnnounce() {
         return announce;
     }
 }
