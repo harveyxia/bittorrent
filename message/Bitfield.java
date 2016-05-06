@@ -36,11 +36,11 @@ public class Bitfield {
         return bitfield[pieceIndex] == 0;
     }
 
-    public void setPieceToCompleted(int pieceIndex) {
+    public synchronized void setPieceToCompleted(int pieceIndex) {
         bitfield[pieceIndex] = 1;
     }
 
-    public void setPieceToRequested(int pieceIndex) {
+    public synchronized void setPieceToRequested(int pieceIndex) {
         bitfield[pieceIndex] = 2;
     }
 

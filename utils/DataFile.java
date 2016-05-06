@@ -12,13 +12,14 @@ import java.util.Arrays;
  * Wrapper around in-progress torrent data files.
  */
 public class Datafile {
+    public static final String MODE = "rws";    // Read and write synchronously for thread-safety
     private final long fileLength;
     private final int pieceLength;
     private final int numPieces;
     private final RandomAccessFile file;
     private final Path dataFolder;
-    private String filename;        // treat as unique identifier for file
-    private Bitfield bitfield;
+    private final String filename;        // treat as unique identifier for file
+    private final Bitfield bitfield;
 
     public Datafile(boolean create, String filename, String directory, long fileLength, int pieceLength) throws IOException {
         this.dataFolder = Paths.get(directory);
@@ -27,7 +28,7 @@ public class Datafile {
         this.pieceLength = pieceLength;
         this.numPieces = (int) Math.ceil(((float) fileLength) / ((float) pieceLength));    // round up
         if (create) {
-            file = new RandomAccessFile(dataFolder.toString() + "/" + filename, "rw");
+            file = new RandomAccessFile(dataFolder.toString() + "/" + filename, MODE);
             file.setLength(fileLength);
             bitfield = new Bitfield(new byte[numPieces]);
         } else {
