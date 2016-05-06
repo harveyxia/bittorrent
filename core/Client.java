@@ -1,297 +1,121 @@
 package core;
 
-import message.Message;
-import message.MessageBuilder;
-import message.MessageParser;
-import metafile.Metafile;
-import metafile.MetafileUtils;
-import tracker.TrackerRequest;
-import tracker.TrackerResponse;
+import metafile.MetaFile;
 import utils.DataFile;
+import utils.Logger;
 
 import java.io.IOException;
-import java.net.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Bittorrent client.
+ * Created by marvin on 5/5/16.
  */
 public class Client {
 
-    public static final int NUM_THREADS = 2;
+    private static final int NUM_THREADS = 8;
     private static final int BACKLOG = 10;
-    private static final String CMD_USAGE = "java Client clientName metaFile clientPort serverPort";
-    private static final int CLIENT_PORT = 200;
-    private static final int SERVER_PORT = 300;
-    private static Inet4Address trackerAddr;
-    private static int trackerPort;
-
-    private ConcurrentHashMap<Peer, Connection> connectionStates;    // maintain bittorrent state of each p2p connection
-    private int clientPort;
-    private int listenPort;
-    private String clientName;
-
-    private DataFile dataFile;
-
-    public Client(String clientName, int clientPort, int listenPort, DataFile dataFile) {
-        this.connectionStates = new ConcurrentHashMap<>();
-        this.clientName = clientName;
-        this.clientPort = clientPort;
-        this.listenPort = listenPort;
-        this.dataFile = dataFile;
-    }
-
-    /*****
-     * ONLY FOR TESTING
-     *****/
-    public Client(String clientName, int clientPort, int listenPort, DataFile dataFile, Peer peer) {
-        this.connectionStates = new ConcurrentHashMap<>();
-        this.clientName = clientName;
-        this.clientPort = clientPort;
-        this.listenPort = listenPort;
-        this.dataFile = dataFile;
-    }
+    private static final String CMD_USAGE = "java Client name port metafile directory";
 
     public static void main(String[] args) {
-        //        if (args.length != 4) {
-        //            System.out.println(CMD_USAGE);
-        //            return;
-        //        }
-        if (args.length != 7) {
+
+        if (args.length != 4) {
             System.out.println(CMD_USAGE);
             return;
         }
-        String metafileName = args[1];
-        int clientPort = Integer.parseInt(args[2]);
-        int listenPort = Integer.parseInt(args[3]);
-        // ONLY FOR TESTING
-        Peer peer = null;
+        Logger logger = new Logger(args[0]);
+        int port = Integer.parseInt(args[1]);
+        MetaFile metaFile = MetaFile.parseMetafile(args[2]);
         try {
-            peer = new Peer(Inet4Address.getByName(args[4]), Integer.parseInt(args[5]));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return;
-        }
-        Metafile metafile = MetafileUtils.parseMetafile(metafileName);
-
-        try {
-            DataFile datafile = null;
-            Client client = null;
-            if (clientPort == 6001) {
-                datafile = new DataFile(true,
-                        metafile.getInfo().getFilename(),
-                        args[6],
-                        metafile.getInfo().getFileLength(),
-                        metafile.getInfo().getPieceLength());
-                client = new Client(args[0], clientPort, listenPort, datafile, peer);
-            } else {
-                datafile = new DataFile(false,
-                        metafile.getInfo().getFilename(),
-                        args[6],
-                        metafile.getInfo().getFileLength(),
-                        metafile.getInfo().getPieceLength());
-                client = new Client(args[0], clientPort, listenPort, datafile);
-            }
-            Thread listenThread = client.getListenThread();
-            Thread eventThread = client.getEventThread("fileId", "trackerUrl");
-            ExecutorService service = Executors.newFixedThreadPool(NUM_THREADS);
-            service.submit(listenThread);
-            service.submit(eventThread);
+            DataFile dataFile = new DataFile(false,
+                    metaFile.getInfo().getFilename(),
+                    args[3],
+                    metaFile.getInfo().getFileLength(),
+                    metaFile.getInfo().getPieceLength());
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+        ConcurrentMap<Peer, Connection> connections = new ConcurrentHashMap<>();
 
-    /**
-     * Listen for incoming client connections.
-     */
-    public Thread getListenThread() {
-        Thread serverThread = null;
-        try {
-            ServerSocket socket = new ServerSocket(listenPort, BACKLOG);
-            // Run server thread
-            serverThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    logOutput("listening on port " + listenPort);
-                    while (true) {
-                        // Accept peer connections
-                        try {
-                            Socket peerSocket = socket.accept();
-                            logOutput("accepted new connection from " + peerSocket.getInetAddress() + " at port " + peerSocket.getPort());
-                            Peer peer = new Peer(peerSocket.getInetAddress(), peerSocket.getPort());
-                            connectionStates.put(peer, Connection.getInitialState(peerSocket));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return serverThread;
-    }
-
-    /**
-     * Process messages from peers and take proper action.
-     */
-    public Thread getEventThread(String fileId, String trackerUrl) {
-        Thread downloadThread;
-        downloadThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                logOutput("downloading on port " + clientPort);
-                // 1. contact tracker for initial peer list
-                // 2. select peers to connectToPeer
-                // 3. connectToPeer peers
-                // 4. start event loop for each out going connection
-                while (true) {
-                    for (Peer peer : connectionStates.keySet()) {
-                        try {
-                            //                            if (!connections.containsKey(peer)) {
-                            //                                connectToPeer(peer, dataFile.getFilename());
-                            //                            } else {
-                            Socket peerSocket = connectionStates.get(peer).getSocket();
-                            Message message = MessageParser.parseMessage(peerSocket.getInputStream());
-                            respondToMessage(message, peer);
-                            //                            }
-                            // send update to peer about client's state towards the peer if changed
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        });
-        return downloadThread;
-    }
-
-    public void respondToMessage(Message message, Peer peer) {
-        Connection peerState = connectionStates.get(peer);
-        switch (message.getMessageID()) {
-            case HANDSHAKE_ID:
-                logOutput("receive Handshake for " + message.getFilename() + " from " + peer);
-                if (!message.getFilename().equalsIgnoreCase(dataFile.getFilename())) {
-                    return; // don't respond to handshakes for files that this doesn't have
-                }
-                sendBitfield(peer);
-                break;
-            case INTERESTED_ID:
-                logOutput("receive Interested from " + peer);
-                break;
-            case NOT_INTERESTED_ID:
-                logOutput("receive Not Interested from " + peer);
-                break;
-            case CHOKE_ID:
-                logOutput("receive Choke from " + peer);
-                break;
-            case UNCHOKE_ID:
-                logOutput("receive Unchoke from " + peer);
-                break;
-            case HAVE_ID:
-                logOutput("receive Have for " + message.getPieceIndex() + " from " + peer);
-                peerState.setPieceToHave(message.getPieceIndex());
-                break;
-            case REQUEST_ID:
-                break;
-            case PIECE_ID:
-
-                break;
-            case BITFIELD_ID:
-                logOutput("receive Bitfield " + message.getBitfield() + " from " + peer);
-                peerState.setBitfield(message.getBitfield().getBitfield());
-                break;
-        }
-    }
-
-    public TrackerResponse getTrackerResponse(String filename) throws IOException {
-
-        Socket socket = new Socket(trackerAddr, trackerPort);
-
-        // Send tracker request
-        TrackerRequest request = new TrackerRequest(TrackerRequest.Event.STARTED, (InetSocketAddress) socket.getLocalSocketAddress(), filename);
-        request.send(socket.getOutputStream());
-
-        // Receive tracker response
-        return TrackerResponse.fromStream(socket.getInputStream());
-    }
-
-    /**
-     * Initiate connection to another peer.
-     */
-    public void connectToPeer(Peer peer, String filename) {
-        try {
-            logOutput("connecting to " + peer.getIp() + " at port " + peer.getPort());
-            Socket socket = new Socket(peer.getIp(), peer.getPort(), InetAddress.getLocalHost(), clientPort);
-            connectionStates.put(peer, Connection.getInitialState(socket));
-            sendHandshake(peer, filename);
-            sendBitfield(peer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Requests from peer the first missing piece that peer has.
-     */
-    public void requestFirstAvailPiece(Peer peer) {
-        Connection peerState = connectionStates.get(peer);
-        for (int i = 0; i < dataFile.getNumPieces(); i++) {
-            if (dataFile.missingPiece(i) && peerState.hasPiece(i)) {
-                sendRequest(peer, i, 0, dataFile.getPieceLength()); // request entire piece
-                break;
-            }
-        }
-    }
-
-    public void sendRequest(Peer peer, int pieceIndex, int begin, int length) {
-        logOutput(String.format("sending Request to " + peer + " for PieceIndex:%d,Begin:%d,Length:%d", pieceIndex, begin, length));
-        dataFile.setPieceToRequested(pieceIndex);
-        byte[] requestMessage = MessageBuilder.buildRequest(pieceIndex, begin, length);
-        sendMessage(peer, requestMessage);
-    }
-
-    public void sendHave(Peer peer) {
-    }
-
-    public void sendChoke(Peer peer) {
-    }
-
-    public void sendUnchoke(Peer peer) {
-    }
-
-    public void sendInterested(Peer peer) {
-    }
-
-    public void sendUninterested(Peer peer) {
-    }
-
-    public void sendPiece(Peer peer, DataFile file, int index, int begin, int length) {
-    }
-
-    public void sendHandshake(Peer peer, String filename) {
-        byte[] handshakeMessage = MessageBuilder.buildHandshake(filename);
-        sendMessage(peer, handshakeMessage);
-    }
-
-    public void sendBitfield(Peer peer) {
-        byte[] bitfieldMessage = MessageBuilder.buildBitfield(dataFile.getBitfield());
-        sendMessage(peer, bitfieldMessage);
-    }
-
-    public void sendMessage(Peer peer, byte[] message) {
-        try {
-            Socket peerSocket = connectionStates.get(peer).getSocket();
-            peerSocket.getOutputStream().write(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void logOutput(String s) {
-        System.out.println("Client " + clientName + ": " + s);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(NUM_THREADS);
+        executor.submit(new Welcomer(port, BACKLOG, connections, logger));
+        executor.submit(new Responder(connections, executor, logger));
     }
 }
+
+//    public TrackerResponse getTrackerResponse(String filename) throws IOException {
+//
+//        Socket socket = new Socket(trackerAddr, trackerPort);
+//
+//        // Send tracker request
+//        TrackerRequest request = new TrackerRequest(TrackerRequest.Event.STARTED, (InetSocketAddress) socket.getLocalSocketAddress(), filename);
+//        request.send(socket.getOutputStream());
+//
+//        // Receive tracker response
+//        return TrackerResponse.fromStream(socket.getInputStream());
+//    }
+//
+//    /**
+//     * Initiate connection to another peer.
+//     */
+//    public void connectToPeer(Peer peer, String filename) {
+//        try {
+//            logOutput("connecting to " + peer.getIp() + " at port " + peer.getPort());
+//            Socket socket = new Socket(peer.getIp(), peer.getPort(), InetAddress.getLocalHost(), clientPort);
+//            connectionStates.put(peer, Connection.getInitialState(socket));
+//            sendHandshake(peer, filename);
+//            sendBitfield(peer);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    /**
+//     * Requests from peer the first missing piece that peer has.
+//     */
+//    public void requestFirstAvailPiece(Peer peer) {
+//        Connection peerState = connectionStates.get(peer);
+//        for (int i = 0; i < dataFile.getNumPieces(); i++) {
+//            if (dataFile.missingPiece(i) && peerState.hasPiece(i)) {
+//                sendRequest(peer, i, 0, dataFile.getPieceLength()); // request entire piece
+//                break;
+//            }
+//        }
+//    }
+//
+//    public void sendRequest(Peer peer, int pieceIndex, int begin, int length) {
+//        logOutput(String.format("sending Request to " + peer + " for PieceIndex:%d,Begin:%d,Length:%d", pieceIndex, begin, length));
+//        dataFile.setPieceToRequested(pieceIndex);
+//        byte[] requestMessage = MessageBuilder.buildRequest(pieceIndex, begin, length);
+//        sendMessage(peer, requestMessage);
+//    }
+//
+//    public void sendHave(Peer peer) {
+//    }
+//
+//    public void sendChoke(Peer peer) {
+//    }
+//
+//    public void sendUnchoke(Peer peer) {
+//    }
+//
+//    public void sendInterested(Peer peer) {
+//    }
+//
+//    public void sendUninterested(Peer peer) {
+//    }
+//
+//    public void sendPiece(Peer peer, DataFile file, int index, int begin, int length) {
+//    }
+//
+//    public void sendHandshake(Peer peer, String filename) {
+//        byte[] handshakeMessage = MessageBuilder.buildHandshake(filename);
+//        sendMessage(peer, handshakeMessage);
+//    }
+//
+//    public void sendBitfield(Peer peer) {
+//        byte[] bitfieldMessage = MessageBuilder.buildBitfield(dataFile.getBitfield());
+//        sendMessage(peer, bitfieldMessage);
+//    }

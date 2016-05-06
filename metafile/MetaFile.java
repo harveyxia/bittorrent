@@ -3,14 +3,13 @@ package metafile;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * Parse metafiles.
+ * Object representation of metafile (.torrent).
  */
-public class MetafileUtils {
+public class MetaFile {
 
     public static final String INFO = "info";
     public static final String FILENAME = "filename";
@@ -24,14 +23,14 @@ public class MetafileUtils {
      * @param filename The metafile.
      * @return metafile.
      */
-    public static Metafile parseMetafile(String filename) {
+    public static MetaFile parseMetafile(String filename) {
         try {
             String json = new String(Files.readAllBytes(Paths.get(filename)), "UTF-8");
             JSONObject metafileJson = new JSONObject(json);
             JSONObject infoJson = metafileJson.getJSONObject(INFO);
             Info info = parseInfoJson(infoJson);
             String announce = metafileJson.getString(ANNOUNCE);
-            return new Metafile(info, announce);
+            return new MetaFile(info, announce);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -48,5 +47,21 @@ public class MetafileUtils {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private Info info;
+    private String announce;
+
+    public MetaFile(Info info, String announce) {
+        this.info = info;
+        this.announce = announce;
+    }
+
+    public Info getInfo() {
+        return info;
+    }
+
+    public String getAnnounce() {
+        return announce;
     }
 }
