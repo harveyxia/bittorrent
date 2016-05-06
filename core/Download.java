@@ -44,9 +44,10 @@ public class Download {
         logger.log(" receive CHOKE from " + connection.getSocket());
     }
 
-    public void receiveUnchoke(Connection connection) {
+    public void receiveUnchoke(Connection connection, Datafile datafile) {
         connection.getDownloadState().setChoked(false);
         logger.log(" receive UNCHOKE from " + connection.getSocket());
+        requestFirstAvailPiece(connection, datafile);   // request first available piece
     }
 
     public void receivePiece(Connection connection,
@@ -64,9 +65,10 @@ public class Download {
         }
     }
 
-    public void receiveBitfield(Connection connection, Datafile datafile, Bitfield bitfield) {
+    public void receiveBitfield(Connection connection, Bitfield bitfield) {
+        logger.log(" receive BITFIELD " + bitfield + " from " + connection.getSocket().getInetAddress());
         connection.setBitfield(bitfield);               // set peer's bitfield
-        requestFirstAvailPiece(connection, datafile);   // request first available piece
+        sendInterested(connection);
     }
 
     // assume that pieces are downloaded in one go

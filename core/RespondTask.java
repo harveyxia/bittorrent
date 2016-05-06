@@ -54,13 +54,13 @@ public class RespondTask implements Runnable {
                 download.receivePiece(connection, connections, datafile, message.getPiece());
                 break;
             case BITFIELD_ID:
-                download.receiveBitfield(connection, datafile, message.getBitfield());
+                download.receiveBitfield(connection, message.getBitfield());
                 break;
             case CHOKE_ID:
                 download.receiveChoke(connection);
                 break;
             case UNCHOKE_ID:
-                download.receiveUnchoke(connection);
+                download.receiveUnchoke(connection, datafile);
                 break;
         }
     }
