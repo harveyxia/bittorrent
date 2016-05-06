@@ -9,17 +9,17 @@ public class Connection {
 
     private boolean established;
 
-    private State download;
-    private State upload;
+    private State downloadState;
+    private State uploadState;
 
     private byte[] bitfield;            // bitfield of the peer
     private Socket socket;
 
-    public Connection(Socket socket, boolean established, State download, State upload) {
+    public Connection(Socket socket, boolean established, State downloadState, State uploadState) {
         this.socket = socket;
         this.established = established;
-        this.download = download;
-        this.upload = upload;
+        this.downloadState = downloadState;
+        this.uploadState = uploadState;
     }
 
     public static Connection getInitialState(Socket socket) {
@@ -75,10 +75,18 @@ public class Connection {
      ***********************/
 
     public boolean canDownloadFrom() {
-        return download.isInterested() && !download.isChoked();
+        return downloadState.isInterested() && !downloadState.isChoked();
     }
 
     public boolean canUploadTo() {
-        return !upload.isChoked() && upload.isInterested();
+        return !uploadState.isChoked() && uploadState.isInterested();
+    }
+
+    public State getDownloadState() {
+        return downloadState;
+    }
+
+    public State getUploadState() {
+        return uploadState;
     }
 }
