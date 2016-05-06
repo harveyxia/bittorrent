@@ -17,6 +17,7 @@ public class Uploader {
     }
 
     public void receiveInterested(Connection connection) {
+        logger.log(" receive INTERESTED from " + connection.getSocket());
         State state = connection.getUploadState();
         if (!state.isInterested() && state.isChoked()) {
             state.setInterested(true);
@@ -24,6 +25,7 @@ public class Uploader {
     }
 
     public void receiveUninterested(Connection connection) {
+        logger.log(" receive UNINTERESTED from " + connection.getSocket());
         State state = connection.getUploadState();
         if (state.isInterested() && state.isChoked()) {
             state.setInterested(false);
@@ -31,6 +33,8 @@ public class Uploader {
     }
 
     public void receiveRequest(Connection connection, DataFile dataFile, int pieceIndex) {
+        logger.log(String.format(" receive REQUEST for pieceIndex:%d from " +
+                connection.getSocket().getInetAddress(), pieceIndex));
         if (connection.canUploadTo()) {
             byte[] pieceMessage = MessageBuilder.buildPiece(pieceIndex, 0, dataFile.readPiece(pieceIndex));
             MessageSender.sendMessage(connection.getSocket(), pieceMessage);
