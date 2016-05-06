@@ -21,6 +21,7 @@ public class RespondTask implements Runnable {
     private ConcurrentMap<Peer, Connection> connections; // only used for case PIECE_ID
 
     public RespondTask(Download download,
+                       Upload upload,
                        Connection connection,
                        ConcurrentMap<Peer, Connection> connections,
                        Message message,

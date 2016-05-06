@@ -18,6 +18,7 @@ public class Connection {
     private Socket socket;
 
     private long bytesDownloaded;
+    private long bytesUploaded;
     private long initTime;
     private float downloadRate;
 
@@ -78,7 +79,17 @@ public class Connection {
         bytesDownloaded += newBytesDownloaded;
     }
 
-    public float getDownloadRate() {
-        return ((float) bytesDownloaded / (System.currentTimeMillis() - initTime));
+    public void incrementBytesUploaded(int newBytesUploaded) {
+        bytesUploaded += newBytesUploaded;
+    }
+
+    // used for unchoke algorithm if this client is downloading file
+    public float getDownloadRate(long currentTime) {
+        return ((float) bytesDownloaded / (currentTime - initTime));
+    }
+
+    // used for unchoke algorithm if this client has COMPLETED downloading file
+    public float getUploadRate(long currentTime) {
+        return ((float) bytesUploaded / (currentTime - initTime));
     }
 }
