@@ -1,5 +1,7 @@
 package core;
 
+import java.net.Socket;
+
 /**
  * Representation of client to client state.
  */
@@ -11,8 +13,10 @@ public class ConnectionState {
     private boolean peerChoking;        // if true, the peer is choking this client
     private boolean peerInterested;     // if true, the peer is interested in this client
     private byte[] bitfield;            // bitfield of the peer
+    private Socket socket;
 
-    public ConnectionState(boolean amChoking, boolean amInterested, boolean peerChoking, boolean peerInterested, boolean established) {
+    public ConnectionState(Socket socket, boolean amChoking, boolean amInterested, boolean peerChoking, boolean peerInterested, boolean established) {
+        this.socket = socket;
         this.amChoking = amChoking;
         this.amInterested = amInterested;
         this.peerChoking = peerChoking;
@@ -20,8 +24,8 @@ public class ConnectionState {
         this.established = established;
     }
 
-    public static ConnectionState getInitialState() {
-        return new ConnectionState(true, false, true, false, false);
+    public static ConnectionState getInitialState(Socket socket) {
+        return new ConnectionState(socket, true, false, true, false, false);
     }
 
     public boolean isAmChoking() {
@@ -62,6 +66,10 @@ public class ConnectionState {
 
     public void setEstablished(boolean established) {
         this.established = established;
+    }
+
+    public Socket getSocket() {
+        return socket;
     }
 
     /************
