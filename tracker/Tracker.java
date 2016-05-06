@@ -39,6 +39,16 @@ public class Tracker implements Runnable {
         this.run = true;
     }
 
+    public static void main(String[] args) throws IOException {
+        if (args.length != 1) {
+            System.out.println("java Tracker trackerPort");
+            return;
+        }
+        int trackerPort = Integer.parseInt(args[0]);
+        Tracker tracker = new Tracker(trackerPort);
+        new Thread(tracker).start();
+    }
+
     public void run() {
         while (run) {
             try (Socket socket = welcomeSocket.accept()) {

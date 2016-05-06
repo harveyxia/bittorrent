@@ -9,6 +9,8 @@ import utils.Logger;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /**
@@ -34,7 +36,10 @@ public class Client {
                 args[3],
                 metaFile.getInfo().getFileLength(),
                 metaFile.getInfo().getPieceLength());
+
         ConcurrentMap<Peer, Connection> connections = new ConcurrentHashMap<>();
+        Set<Peer> unchokedPeers = new HashSet<>();
+
         // probably shouldn't be local host if running on zoo or something
         InetSocketAddress client = new InetSocketAddress(InetAddress.getLocalHost(), port);
         TrackerClient trackerClient = new TrackerClient(client, metaFile.getAnnounce(), datafile);
@@ -42,7 +47,8 @@ public class Client {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(NUM_THREADS);
         executor.submit(new TrackerTask(trackerClient, connections, executor, logger));
         executor.submit(new Welcomer(port, BACKLOG, connections, logger));
-        executor.submit(new Responder(connections, datafile, executor, logger));
+        executor.submit(new Responder(connections, unchokedPeers, datafile, executor, logger));
+        executor.submit(new Unchoker(connections, datafile, unchokedPeers));
     }
 }
 

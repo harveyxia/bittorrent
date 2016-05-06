@@ -7,6 +7,7 @@ import utils.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -15,18 +16,22 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class Responder implements Runnable {
 
+    private final Uploader uploader;
     private final Downloader downloader;
     private ConcurrentMap<Peer, Connection> connections;
+    private Set<Peer> unchokedPeers;
     private DataFile datafile;
     private ScheduledExecutorService executor;
     private Logger logger;
 
-    public Responder(ConcurrentMap<Peer, Connection> connections, DataFile datafile, ScheduledExecutorService executor, Logger logger) {
+    public Responder(ConcurrentMap<Peer, Connection> connections, Set<Peer> unchokedPeers, DataFile datafile, ScheduledExecutorService executor, Logger logger) {
         this.connections = connections;
+        this.unchokedPeers = unchokedPeers;
         this.datafile = datafile;
         this.executor = executor;
         this.logger = logger;
         this.downloader = new Downloader(logger);
+        this.uploader = new Uploader(logger);
     }
 
     @Override
@@ -41,7 +46,7 @@ public class Responder implements Runnable {
                     }
                     Message message = MessageParser.parseMessage(input);
                     logger.log(message.toString());
-                    executor.submit(new RespondTask(downloader, connection, connections, message, datafile));
+                    executor.submit(new RespondTask(downloader, uploader, connection, connections, message, datafile));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
