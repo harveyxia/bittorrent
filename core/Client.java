@@ -29,9 +29,6 @@ public class Client {
     private static int trackerPort;
 
     private ConcurrentHashMap<Peer, ConnectionState> connectionStates;    // maintain bittorrent state of each p2p connection
-    private ConcurrentHashMap<Peer, Socket> connections;                  // maintain TCP state of each p2p connection
-    //    private HashMap<String, DataFile> files;                    // maintain map of filenames to files
-    private ConcurrentHashMap.KeySetView<Peer, Boolean> peers;                                // list of all peers
     private int clientPort;
     private int listenPort;
     private String clientName;
@@ -40,8 +37,6 @@ public class Client {
 
     public Client(String clientName, int clientPort, int listenPort, DataFile dataFile) {
         this.connectionStates = new ConcurrentHashMap<>();
-        this.connections = new ConcurrentHashMap<>();
-        this.peers = ConcurrentHashMap.newKeySet();
         this.clientName = clientName;
         this.clientPort = clientPort;
         this.listenPort = listenPort;
@@ -53,13 +48,10 @@ public class Client {
      *****/
     public Client(String clientName, int clientPort, int listenPort, DataFile dataFile, Peer peer) {
         this.connectionStates = new ConcurrentHashMap<>();
-        this.connections = new ConcurrentHashMap<>();
-        this.peers = ConcurrentHashMap.newKeySet();
         this.clientName = clientName;
         this.clientPort = clientPort;
         this.listenPort = listenPort;
         this.dataFile = dataFile;
-        peers.add(peer);
     }
 
     public static void main(String[] args) {
@@ -127,12 +119,10 @@ public class Client {
                     while (true) {
                         // Accept peer connections
                         try {
-                            Socket inConn = socket.accept();
-                            logOutput("accepted new connection from " + inConn.getInetAddress() + " at port " + inConn.getPort());
-                            Peer peer = new Peer(inConn.getInetAddress(), inConn.getPort());
-                            peers.add(peer);
-                            connections.put(peer, inConn);
-                            connectionStates.put(peer, ConnectionState.getInitialState());
+                            Socket peerSocket = socket.accept();
+                            logOutput("accepted new connection from " + peerSocket.getInetAddress() + " at port " + peerSocket.getPort());
+                            Peer peer = new Peer(peerSocket.getInetAddress(), peerSocket.getPort());
+                            connectionStates.put(peer, ConnectionState.getInitialState(peerSocket));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -159,15 +149,15 @@ public class Client {
                 // 3. connectToPeer peers
                 // 4. start event loop for each out going connection
                 while (true) {
-                    for (Peer peer : peers) {
+                    for (Peer peer : connectionStates.keySet()) {
                         try {
-                            if (!connections.containsKey(peer)) {
-                                connectToPeer(peer, dataFile.getFilename());
-                            } else {
-                                Socket peerSocket = connections.get(peer);
-                                Message message = MessageParser.parseMessage(peerSocket.getInputStream());
-                                respondToMessage(message, peer);
-                            }
+                            //                            if (!connections.containsKey(peer)) {
+                            //                                connectToPeer(peer, dataFile.getFilename());
+                            //                            } else {
+                            Socket peerSocket = connectionStates.get(peer).getSocket();
+                            Message message = MessageParser.parseMessage(peerSocket.getInputStream());
+                            respondToMessage(message, peer);
+                            //                            }
                             // send update to peer about client's state towards the peer if changed
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -212,6 +202,7 @@ public class Client {
             case REQUEST_ID:
                 break;
             case PIECE_ID:
+
                 break;
             case BITFIELD_ID:
                 logOutput("receive Bitfield " + message.getBitfield() + " from " + peer);
@@ -239,8 +230,7 @@ public class Client {
         try {
             logOutput("connecting to " + peer.getIp() + " at port " + peer.getPort());
             Socket socket = new Socket(peer.getIp(), peer.getPort(), InetAddress.getLocalHost(), clientPort);
-            connections.put(peer, socket);
-            connectionStates.put(peer, ConnectionState.getInitialState());
+            connectionStates.put(peer, ConnectionState.getInitialState(socket));
             sendHandshake(peer, filename);
             sendBitfield(peer);
         } catch (IOException e) {
@@ -298,7 +288,7 @@ public class Client {
 
     public void sendMessage(Peer peer, byte[] message) {
         try {
-            Socket peerSocket = connections.get(peer);
+            Socket peerSocket = connectionStates.get(peer).getSocket();
             peerSocket.getOutputStream().write(message);
         } catch (IOException e) {
             e.printStackTrace();
