@@ -2,6 +2,8 @@ package message;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -60,12 +62,18 @@ public class MessageParser {
 
     public static Message parseHandshake(InputStream input) throws IOException {
         byte[] filenameLengthArray = new byte[MessageBuilder.intByteLength];
+        byte[] peerIpArray = new byte[MessageBuilder.intByteLength];
+        byte[] peerPortArray = new byte[MessageBuilder.intByteLength];
+        input.read(peerIpArray, 0, MessageBuilder.intByteLength);
+        input.read(peerPortArray, 0, MessageBuilder.intByteLength);
         input.read(filenameLengthArray, 0, MessageBuilder.intByteLength);
         int filenameLength = byteToInt(filenameLengthArray);
         byte[] filenameArray = new byte[filenameLength];
         input.read(filenameArray, 0, filenameLength);
         String filename = new String(filenameArray, StandardCharsets.UTF_8);
-        return new Message(Message.MessageID.HANDSHAKE_ID, filename);
+        InetAddress peerIp = InetAddress.getByAddress(peerIpArray);
+        int peerPort = byteToInt(peerPortArray);
+        return new Message(Message.MessageID.HANDSHAKE_ID, filename, peerIp, peerPort);
     }
 
     public static Message parseRequest(InputStream input) throws IOException {

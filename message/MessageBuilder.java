@@ -2,6 +2,7 @@ package message;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -106,15 +107,17 @@ public class MessageBuilder {
     }
 
     /**
-     * Format: [HANDSHAKE_ID, FILENAME LENGTH, FILENAME]
+     * Format: [HANDSHAKE_ID, PEER IP, PORT PORT, FILENAME LENGTH, FILENAME]
      *
      * @param filename The filename.
      */
-    public static byte[] buildHandshake(String filename) {
+    public static byte[] buildHandshake(String filename, InetSocketAddress peerSocketAddress) {
         ByteArrayOutputStream message = new ByteArrayOutputStream();
         byte[] filenameBytes = filename.getBytes(StandardCharsets.UTF_8);
         try {
             message.write(intToByte(Message.MessageID.HANDSHAKE_ID.ordinal()));
+            message.write(peerSocketAddress.getAddress().getAddress());
+            message.write(intToByte(peerSocketAddress.getPort()));
             message.write(intToByte(filenameBytes.length));
             message.write(filenameBytes);
         } catch (IOException e) {

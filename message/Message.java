@@ -1,5 +1,7 @@
 package message;
 
+import java.net.InetAddress;
+
 /**
  * Harvey Xia.
  */
@@ -7,6 +9,8 @@ public class Message {
     private MessageID messageID;
     private int pieceIndex;
     private String filename;
+    private InetAddress peerIp;
+    private int peerPort;
     private Request request;
     private Piece piece;
     private Bitfield bitfield;
@@ -17,9 +21,11 @@ public class Message {
     }
 
     // HANDSHAKE
-    public Message(MessageID messageID, String filename) {
+    public Message(MessageID messageID, String filename, InetAddress peerIp, int peerPort) {
         this.messageID = messageID;
         this.filename = filename;
+        this.peerIp = peerIp;
+        this.peerPort = peerPort;
     }
 
     // HAVE
@@ -68,6 +74,14 @@ public class Message {
 
     public MessageID getMessageID() {
         return messageID;
+    }
+
+    public InetAddress getPeerIp() {
+        return peerIp;
+    }
+
+    public int getPeerPort() {
+        return peerPort;
     }
 
     public enum MessageID {

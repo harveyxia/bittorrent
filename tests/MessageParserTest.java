@@ -5,6 +5,8 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -68,10 +70,13 @@ public class MessageParserTest {
     @Test
     public void testParseHandshake() throws Exception {
         String filename = "filename.txt";
-        byte[] requestMessage = MessageBuilder.buildHandshake(filename);
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getLocalHost(), 9999);
+        byte[] requestMessage = MessageBuilder.buildHandshake(filename, inetSocketAddress);
         InputStream is = new ByteArrayInputStream(requestMessage);
         assertEquals(Message.MessageID.HANDSHAKE_ID.ordinal(), MessageParser.readIntFromStream(is));
         Message actual = MessageParser.parseHandshake(is);
         assertEquals(filename, actual.getFilename());
+        assertEquals(inetSocketAddress.getAddress(), actual.getPeerIp());
+        assertEquals(9999, actual.getPeerPort());
     }
 }
