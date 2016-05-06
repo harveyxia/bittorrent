@@ -17,16 +17,16 @@ public class RespondTask implements Runnable {
     private Message message;
     private Datafile datafile;
 
-    private Download download;
+    private Downloader downloader;
     private ConcurrentMap<Peer, Connection> connections; // only used for case PIECE_ID
 
-    public RespondTask(Download download,
-                       Upload upload,
+    public RespondTask(Downloader downloader,
+                       Uploader uploader,
                        Connection connection,
                        ConcurrentMap<Peer, Connection> connections,
                        Message message,
                        Datafile datafile) {
-        this.download = download;
+        this.downloader = downloader;
         this.connection = connection;
         this.connections = connections;
         this.message = message;
@@ -53,16 +53,16 @@ public class RespondTask implements Runnable {
                 // upload
                 break;
             case PIECE_ID:
-                download.receivePiece(connection, connections, datafile, message.getPiece());
+                downloader.receivePiece(connection, connections, datafile, message.getPiece());
                 break;
             case BITFIELD_ID:
-                download.receiveBitfield(connection, message.getBitfield());
+                downloader.receiveBitfield(connection, message.getBitfield());
                 break;
             case CHOKE_ID:
-                download.receiveChoke(connection);
+                downloader.receiveChoke(connection);
                 break;
             case UNCHOKE_ID:
-                download.receiveUnchoke(connection, datafile);
+                downloader.receiveUnchoke(connection, datafile);
                 break;
         }
     }
