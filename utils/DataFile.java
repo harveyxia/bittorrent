@@ -39,31 +39,37 @@ public class DataFile {
         }
     }
 
-    public synchronized void writePiece(byte[] data, int pieceIndex) {
-        long pos = pieceIndex * pieceLength;
-        try {
-            file.seek(pos);
-            file.write(data);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void writePiece(byte[] data, int pieceIndex) {
+        synchronized(file) {
+            long pos = pieceIndex * pieceLength;
+            try {
+                file.seek(pos);
+                file.write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public synchronized byte[] readPiece(int pieceIndex) {
-        long pos = pieceIndex * pieceLength;
-        int length = Math.min(pieceLength, (int) (fileLength - pos - 1));
-        byte[] piece = new byte[length];
-        try {
-            file.seek(pos);
-            file.read(piece, (int) pos, length);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public byte[] readPiece(int pieceIndex) {
+        synchronized(file) {
+            long pos = pieceIndex * pieceLength;
+            int length = Math.min(pieceLength, (int) (fileLength - pos - 1));
+            byte[] piece = new byte[length];
+            try {
+                file.seek(pos);
+                file.read(piece, (int) pos, length);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return piece;
         }
-        return piece;
     }
 
     public void close() throws IOException {
-        file.close();
+        synchronized(file) {
+            file.close();
+        }
     }
 
     public long getFileLength() {
