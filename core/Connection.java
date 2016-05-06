@@ -17,6 +17,10 @@ public class Connection {
     private Bitfield bitfield;            // bitfield of the peer
     private Socket socket;
 
+    private long bytesDownloaded;
+    private long initTime;
+    private float downloadRate;
+
     public Connection(Socket socket, boolean established, State downloadState, State uploadState) {
         this.socket = socket;
         this.established = established;
@@ -68,5 +72,13 @@ public class Connection {
 
     public void setBitfield(Bitfield bitfield) {
         this.bitfield = bitfield;
+    }
+
+    public void incrementBytesDownloaded(int newBytesDownloaded) {
+        bytesDownloaded += newBytesDownloaded;
+    }
+
+    public float getDownloadRate() {
+        return ((float) bytesDownloaded / (System.currentTimeMillis() - initTime));
     }
 }

@@ -54,16 +54,16 @@ public class Download {
                              ConcurrentMap<Peer, Connection> connections,
                              Datafile datafile,
                              Piece piece) {
-        datafile.getBitfield().setPieceToCompleted(piece.getPieceIndex());                 // 1. update bitfield
-        datafile.writePiece(piece.getBlock(), piece.getPieceIndex());                      // 2. write piece
-        // Broadcast HAVE message for new pieceIndex to all other peers
-        for (Map.Entry<Peer, Connection> peerConnection : connections.entrySet()) {
+        datafile.getBitfield().setPieceToCompleted(piece.getPieceIndex());                  // 1. update bitfield
+        datafile.writePiece(piece.getBlock(), piece.getPieceIndex());                       // 2. write piece
+        connection.incrementBytesDownloaded(piece.getBlock().length);                       // 3. update bytes downloaded
+        for (Map.Entry<Peer, Connection> peerConnection : connections.entrySet()) {         // 4. broadcast Have new piece to all peers
             if (!peerConnection.getValue().equals(connection)) {
                 sendHave(peerConnection.getValue(), piece.getPieceIndex());
                 logger.log(" send HAVE to " + peerConnection.getKey());
             }
         }
-        requestFirstAvailPiece(connection, datafile);                                       // 3. request next piece
+        requestFirstAvailPiece(connection, datafile);                                        // 5. request next piece
         // TODO: what to do when completed
     }
 
@@ -75,6 +75,10 @@ public class Download {
 
     // assume that pieces are downloaded in one go
     public void sendRequest(Connection connection, int pieceIndex, int pieceLength) {
+        if (!connection.canDownloadFrom()) {
+            logger.log(" ERROR: cannot download from " + connection.getSocket().getInetAddress());
+            return;
+        }
         byte[] requestMessage = MessageBuilder.buildRequest(pieceIndex, 0, pieceLength);
         MessageSender.sendMessage(connection.getSocket(), requestMessage);
         logger.log(String.format(" send REQUEST for pieceIndex:%d, pieceLength:%d to " +
