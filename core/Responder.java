@@ -2,6 +2,7 @@ package core;
 
 import message.Message;
 import message.MessageParser;
+import utils.DataFile;
 import utils.Logger;
 
 import java.io.IOException;
@@ -10,16 +11,18 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Created by marvin on 5/5/16.
+ * Schedules tasks that respond to received messages.
  */
 public class Responder implements Runnable {
 
     private ConcurrentMap<Peer, Connection> connections;
+    private DataFile dataFile;
     private ScheduledExecutorService executor;
     private Logger logger;
 
-    public Responder(ConcurrentMap<Peer, Connection> connections, ScheduledExecutorService executor, Logger logger) {
+    public Responder(ConcurrentMap<Peer, Connection> connections, DataFile dataFile, ScheduledExecutorService executor, Logger logger) {
         this.connections = connections;
+        this.dataFile = dataFile;
         this.executor = executor;
         this.logger = logger;
     }
@@ -36,7 +39,7 @@ public class Responder implements Runnable {
                     }
                     Message message = MessageParser.parseMessage(input);
                     logger.log(message.toString());
-                    executor.submit(new Task(connection, message));
+                    executor.submit(new RespondTask(connection, message, dataFile));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

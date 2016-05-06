@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Created by marvin on 5/5/16.
+ * Accepts new peer connections.
  */
 public class Welcomer implements Runnable {
 

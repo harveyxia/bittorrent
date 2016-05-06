@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Created by marvin on 5/5/16.
+ * Executable for the client.
  */
 public class Client {
 
@@ -19,7 +19,7 @@ public class Client {
     private static final int BACKLOG = 10;
     private static final String CMD_USAGE = "java Client name port metafile directory";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         if (args.length != 4) {
             System.out.println(CMD_USAGE);
@@ -28,20 +28,16 @@ public class Client {
         Logger logger = new Logger(args[0]);
         int port = Integer.parseInt(args[1]);
         MetaFile metaFile = MetaFile.parseMetafile(args[2]);
-        try {
-            DataFile dataFile = new DataFile(false,
-                    metaFile.getInfo().getFilename(),
-                    args[3],
-                    metaFile.getInfo().getFileLength(),
-                    metaFile.getInfo().getPieceLength());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        DataFile dataFile = new DataFile(false,
+                metaFile.getInfo().getFilename(),
+                args[3],
+                metaFile.getInfo().getFileLength(),
+                metaFile.getInfo().getPieceLength());
         ConcurrentMap<Peer, Connection> connections = new ConcurrentHashMap<>();
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(NUM_THREADS);
         executor.submit(new Welcomer(port, BACKLOG, connections, logger));
-        executor.submit(new Responder(connections, executor, logger));
+        executor.submit(new Responder(connections, dataFile, executor, logger));
     }
 }
 
