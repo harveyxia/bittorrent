@@ -1,8 +1,14 @@
 package core;
 
 import utils.Datafile;
+import utils.Logger;
+import utils.MessageSender;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
@@ -15,13 +21,15 @@ public class Unchoker implements Runnable {
     private int i;
     private ConcurrentMap<Peer, Connection> connections;
     private Datafile datafile;
-    private Set<Peer> unchokedPeers;
+    private ConcurrentHashMap<Peer, Float> unchokedPeers;
+    private Logger logger;
     private Random random = new Random();
 
-    public Unchoker(ConcurrentMap<Peer, Connection> connections, Datafile datafile, Set<Peer> unchokedPeers) {
+    public Unchoker(ConcurrentMap<Peer, Connection> connections, Datafile datafile, ConcurrentHashMap<Peer, Float> unchokedPeers, Logger logger) {
         this.connections = connections;
         this.datafile = datafile;
         this.unchokedPeers = unchokedPeers;
+        this.logger = logger;
         this.i = 0;
     }
 
@@ -38,11 +46,20 @@ public class Unchoker implements Runnable {
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .limit(4)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        unchokedPeers = sortedRates.keySet();
-//        if (i == 0) {       // optimistic unchoking
-//            unchokedPeers.add(getOptimisticUnchoke());
-//        }
-//        i = (i + 1) % 3;
+        // TODO: send CHOKE to all removed peers
+        // TODO: send UNCHOKE to all newly added peers who are interested
+
+        ConcurrentHashMap<Peer, Float> oldUnchokedPeers = unchokedPeers;
+        unchokedPeers = new ConcurrentHashMap<>(sortedRates);
+        notifyPeers(oldUnchokedPeers, unchokedPeers);
+
+        for (Peer peer1 : unchokedPeers.keySet()) {
+            System.out.println("Unchoked set contains " + peer1);
+        }
+        //        if (i == 0) {       // optimistic unchoking
+        //            unchokedPeers.add(getOptimisticUnchoke());
+        //        }
+        //        i = (i + 1) % 3;
     }
 
     private HashMap<Peer, Float> getRates() {
@@ -64,18 +81,35 @@ public class Unchoker implements Runnable {
         return rates;
     }
 
-//    private Peer getOptimisticUnchoke() {
-//        Peer optimisticPeer = null;
-//        int numPeers = connections.keySet().size();
-//        int itemIndex = random.nextInt(numPeers);
-//        for (Peer peer : connections.keySet()) {
-//            if (i == itemIndex) {
-//                if (peer )
-//                optimisticPeer = peer;
-//                break;
-//            }
-//            i++;
-//        }
-//        return optimisticPeer;
-//    }
+    private void notifyPeers(ConcurrentHashMap<Peer, Float> oldUnchokedPeers, ConcurrentHashMap<Peer, Float> newUnchokedPeers) {
+        // go through old peers, if not in new peers, send CHOKE
+        for (Peer peer : oldUnchokedPeers.keySet()) {
+            System.out.println("Old set contains " + peer);
+            if (!newUnchokedPeers.containsKey(peer)) {
+                MessageSender.sendChoke(connections.get(peer), logger);
+            }
+        }
+        // go through new peers, if not in old peers, send UNCHOKE
+        for (Peer peer : newUnchokedPeers.keySet()) {
+            System.out.println("New set contains " + peer);
+            if (!oldUnchokedPeers.containsKey(peer)) {
+                MessageSender.sendUnchoke(connections.get(peer), logger);
+            }
+        }
+    }
+
+    //    private Peer getOptimisticUnchoke() {
+    //        Peer optimisticPeer = null;
+    //        int numPeers = connections.keySet().size();
+    //        int itemIndex = random.nextInt(numPeers);
+    //        for (Peer peer : connections.keySet()) {
+    //            if (i == itemIndex) {
+    //                if (peer )
+    //                optimisticPeer = peer;
+    //                break;
+    //            }
+    //            i++;
+    //        }
+    //        return optimisticPeer;
+    //    }
 }

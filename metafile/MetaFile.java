@@ -18,6 +18,13 @@ public class MetaFile {
     public static final String PIECE_LENGTH = "pieceLength";
     public static final String FILE_LENGTH = "fileLength";
     public static final String ANNOUNCE = "announce";
+    private Info info;
+    private InetSocketAddress announce;
+
+    private MetaFile(Info info, InetSocketAddress announce) {
+        this.info = info;
+        this.announce = announce;
+    }
 
     /**
      * Parse .torrent file.
@@ -51,14 +58,6 @@ public class MetaFile {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private Info info;
-    private InetSocketAddress announce;
-
-    private MetaFile(Info info, InetSocketAddress announce) {
-        this.info = info;
-        this.announce = announce;
     }
 
     public Info getInfo() {

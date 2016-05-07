@@ -4,9 +4,7 @@ import core.Peer;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**

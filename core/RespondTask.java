@@ -1,11 +1,10 @@
 package core;
 
-import message.Bitfield;
 import message.Message;
-import message.MessageBuilder;
 import utils.Datafile;
 import utils.MessageSender;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -13,22 +12,26 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class RespondTask implements Runnable {
 
+    private ConcurrentHashMap<Peer, Float> unchokedPeers;
     private Connection connection;
     private Message message;
     private Datafile datafile;
 
     private Downloader downloader;
     private Uploader uploader;
+    private Peer peer;
     private ConcurrentMap<Peer, Connection> connections; // only used for case PIECE_ID
 
     public RespondTask(Downloader downloader,
                        Uploader uploader,
                        Connection connection,
+                       Peer peer,
                        ConcurrentMap<Peer, Connection> connections,
                        Message message,
                        Datafile datafile) {
         this.downloader = downloader;
         this.uploader = uploader;
+        this.peer = peer;
         this.connection = connection;
         this.connections = connections;
         this.message = message;
@@ -39,11 +42,11 @@ public class RespondTask implements Runnable {
     public void run() {
         switch (message.getMessageID()) {
             case HANDSHAKE_ID:
-                sendBitfield(connection, datafile.getBitfield());
+                MessageSender.sendBitfield(connection, downloader.getLogger(), datafile.getBitfield());
                 break;
             case INTERESTED_ID:
                 // TODO: explicitly reject interested by sending choked?
-                uploader.receiveInterested(connection);
+                uploader.receiveInterested(connection, peer);
                 break;
             case NOT_INTERESTED_ID:
                 uploader.receiveUninterested(connection);
@@ -52,7 +55,7 @@ public class RespondTask implements Runnable {
                 updatePeerBitfield(connection, message.getPieceIndex());
                 break;
             case REQUEST_ID:
-                uploader.receiveRequest(connection, datafile, message.getPieceIndex());
+                uploader.receiveRequest(connection, datafile, message.getRequest().getPieceIndex());
                 break;
             case PIECE_ID:
                 downloader.receivePiece(connection, connections, datafile, message.getPiece());
@@ -73,8 +76,5 @@ public class RespondTask implements Runnable {
         connection.getBitfield().setPieceToCompleted(pieceIndex);
     }
 
-    private void sendBitfield(Connection connection, Bitfield bitfield) {
-        byte[] bitfieldMessage = MessageBuilder.buildBitfield(bitfield.getByteArray());
-        MessageSender.sendMessage(connection.getSocket(), bitfieldMessage);
-    }
+
 }

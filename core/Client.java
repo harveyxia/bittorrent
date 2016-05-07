@@ -1,6 +1,5 @@
 package core;
 
-import message.MessageBuilder;
 import metafile.MetaFile;
 import tracker.TrackerClient;
 import tracker.TrackerRequest;
@@ -14,7 +13,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -26,6 +24,7 @@ public class Client {
     private static final int NUM_THREADS = 8;
     private static final int BACKLOG = 10;
     private static final String CMD_USAGE = "java Client name port metafile directory [registerFile]";
+    private static final int UNCHOKE_INTERVAL = 5; // TODO: CHANGE TO 10
 
     public static void main(String[] args) throws IOException {
         boolean registerFile = false;
@@ -42,14 +41,17 @@ public class Client {
         Logger logger = new Logger(args[0]);
         int port = Integer.parseInt(args[1]);
         MetaFile metaFile = MetaFile.parseMetafile(args[2]);
-        Datafile datafile = new Datafile(false,
+        String directory = args[3];
+        boolean createEmptyFile = !registerFile;        // if not registering new file
+        Datafile datafile = new Datafile(
+                createEmptyFile,
                 metaFile.getInfo().getFilename(),
-                args[3],
+                directory,
                 metaFile.getInfo().getFileLength(),
                 metaFile.getInfo().getPieceLength());
 
         ConcurrentMap<Peer, Connection> connections = new ConcurrentHashMap<>();
-        Set<Peer> unchokedPeers = new HashSet<>();
+        ConcurrentHashMap<Peer, Float> unchokedPeers = new ConcurrentHashMap<>();
 
         // probably shouldn't be local host if running on zoo or something
         InetSocketAddress client = new InetSocketAddress(InetAddress.getLocalHost(), port);
@@ -58,11 +60,11 @@ public class Client {
         TrackerResponse initResponse = getInitialTrackerResponse(trackerClient, registerFile, connections, trackerClient, logger);
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(NUM_THREADS);
+        executor.scheduleAtFixedRate(new Unchoker(connections, datafile, unchokedPeers, logger), 0, UNCHOKE_INTERVAL, TimeUnit.SECONDS);
         executor.scheduleAtFixedRate(new TrackerTask(trackerClient, connections, executor, logger),
                 initResponse.getInterval(), initResponse.getInterval(), TimeUnit.SECONDS);
         executor.submit(new Welcomer(port, BACKLOG, connections, logger, datafile));
         executor.submit(new Responder(connections, unchokedPeers, datafile, executor, logger));
-        executor.submit(new Unchoker(connections, datafile, unchokedPeers));
     }
 
     private static TrackerResponse getInitialTrackerResponse(TrackerClient trackerClient,
@@ -106,20 +108,10 @@ public class Client {
 
             Connection connection = Connection.getInitialState(socket);
             connections.put(peer, connection);
-            sendHandshake(connection, trackerClient.getDatafile(), trackerClient);
-            sendBitfield(connection, trackerClient.getDatafile());
+            MessageSender.sendHandshake(connection, logger, trackerClient.getDatafile(), trackerClient);
+            MessageSender.sendBitfield(connection, logger, trackerClient.getDatafile().getBitfield());
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private static void sendHandshake(Connection connection, Datafile datafile, TrackerClient trackerClient) {
-        byte[] handshakeMessage = MessageBuilder.buildHandshake(datafile.getFilename(), trackerClient.getClient());
-        MessageSender.sendMessage(connection.getSocket(), handshakeMessage);
-    }
-
-    private static void sendBitfield(Connection connection, Datafile datafile) {
-        byte[] bitfieldMessage = MessageBuilder.buildBitfield(datafile.getBitfield().getByteArray());
-        MessageSender.sendMessage(connection.getSocket(), bitfieldMessage);
     }
 }

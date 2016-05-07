@@ -6,15 +6,14 @@ import tracker.TrackerRequest.Event;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
-
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -23,11 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Tracker implements Runnable {
 
 
-    private ServerSocket welcomeSocket;
-    private ConcurrentHashMap<String,Set<Peer>> peerLists;
-    private ConcurrentHashMap<String,ConcurrentHashMap<Peer, Timer>> timerList;
-
     private final static int TIMEOUT = 2; // timeout in seconds
+    private ServerSocket welcomeSocket;
+    private ConcurrentHashMap<String, Set<Peer>> peerLists;
+    private ConcurrentHashMap<String, ConcurrentHashMap<Peer, Timer>> timerList;
     private boolean run;
 
     public Tracker(int port) throws IOException {
@@ -59,10 +57,10 @@ public class Tracker implements Runnable {
                 TrackerResponse resp = processReq(req);
                 if (resp != null)
                     resp.send(out);
-            } catch (SocketTimeoutException e){
+            } catch (SocketTimeoutException e) {
                 // ignore
                 // used to retest run condition
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -74,7 +72,7 @@ public class Tracker implements Runnable {
         }
     }
 
-    public void shutdown(){
+    public void shutdown() {
         run = false;
     }
 
@@ -119,7 +117,7 @@ public class Tracker implements Runnable {
                     peerLists.put(fileName, peers);
                     startTimer(fileName, peer);
                 }
-                
+
                 return new TrackerResponse(TIMEOUT, peers.size(), 0, peers);
 
             case STOPPED:

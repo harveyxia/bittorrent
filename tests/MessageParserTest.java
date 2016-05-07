@@ -28,8 +28,9 @@ public class MessageParserTest {
 
     @Test
     public void testParseRequest() throws Exception {
-        Request expectedRequest = new Request(1, 2, 3);
-        byte[] requestMessage = MessageBuilder.buildRequest(1, 2, 3);
+        int pieceIndex = 1;
+        Request expectedRequest = new Request(pieceIndex, 2, 3);
+        byte[] requestMessage = MessageBuilder.buildRequest(pieceIndex, 2, 3);
 
         InputStream is = new ByteArrayInputStream(requestMessage);
         assertEquals(Message.MessageID.REQUEST_ID.ordinal(), MessageParser.readIntFromStream(is));

@@ -28,13 +28,13 @@ public class Peer {
     }
 
     public boolean equals(Object o) {
-//        if (o == this)
-//            return true;
-//        if (o == null)
-//            return false;
+        //        if (o == this)
+        //            return true;
+        //        if (o == null)
+        //            return false;
 
-//        if (getClass() != o.getClass())
-//            return false;
+        //        if (getClass() != o.getClass())
+        //            return false;
 
         Peer p = (Peer) o;
         return (port == p.getPort() && ip.equals(p.getIp()));

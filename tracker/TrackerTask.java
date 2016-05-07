@@ -2,14 +2,9 @@ package tracker;
 
 import core.Connection;
 import core.Peer;
-import message.MessageBuilder;
-import utils.Datafile;
 import utils.Logger;
-import utils.MessageSender;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -47,16 +42,16 @@ public class TrackerTask implements Runnable {
                     connection.getSocket().close();
                 }
             }
-//            // Add new peers
-//            for (Peer peer : peers) {
-//                System.out.println("TrackerTask " + peer);
-//                if (!connections.containsKey(peer) && !isPeerEqualToMe(peer)) {
-//                    connect(peer);
-//                }
-//            }
+            //            // Add new peers
+            //            for (Peer peer : peers) {
+            //                System.out.println("TrackerTask " + peer);
+            //                if (!connections.containsKey(peer) && !isPeerEqualToMe(peer)) {
+            //                    connect(peer);
+            //                }
+            //            }
             //            executor.schedule(this, response.getInterval(), TimeUnit.SECONDS);
         } catch (IOException e) {
-//            logger.log(e.toString());
+            //            logger.log(e.toString());
             e.printStackTrace();
         }
     }

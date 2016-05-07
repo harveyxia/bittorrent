@@ -1,7 +1,6 @@
 package core;
 
 import message.Message;
-import message.MessageBuilder;
 import message.MessageParser;
 import utils.Datafile;
 import utils.Logger;
@@ -50,8 +49,9 @@ public class Welcomer implements Runnable {
                     Peer peer = new Peer(message.getPeerIp(), message.getPeerPort());
                     connections.put(peer, Connection.getInitialState(peerSocket));
 
-                    byte[] bitfieldMessage = MessageBuilder.buildBitfield(datafile.getBitfield().getByteArray());
-                    MessageSender.sendMessage(peerSocket, bitfieldMessage);
+                    MessageSender.sendBitfield(connections.get(peer), logger, datafile.getBitfield());
+                    //                    byte[] bitfieldMessage = MessageBuilder.buildBitfield(datafile.getBitfield().getByteArray());
+                    //                    MessageSender.sendMessage(peerSocket, bitfieldMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

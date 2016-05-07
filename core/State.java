@@ -13,6 +13,12 @@ public class State {
         this.choked = choked;
     }
 
+    // Download: peer is choking me, I am not interested in peer
+    // Upload: I am choking peer, peer is not interested in me
+    public static State getInitialState() {
+        return new State(true, false);
+    }
+
     public boolean isChoked() {
         return choked;
     }
@@ -27,11 +33,5 @@ public class State {
 
     public synchronized void setInterested(boolean interested) {
         this.interested = interested;
-    }
-
-    // Download: peer is choking me, I am not interested in peer
-    // Upload: I am choking peer, peer is not interested in me
-    public static State getInitialState() {
-        return new State(true, false);
     }
 }

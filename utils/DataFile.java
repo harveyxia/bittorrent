@@ -29,6 +29,7 @@ public class Datafile {
         this.numPieces = (int) Math.ceil(((float) fileLength) / ((float) pieceLength));    // round up
         if (create) {
             file = new RandomAccessFile(dataFolder.toString() + "/" + filename, MODE);
+            System.out.println("set file length to " + fileLength);
             file.setLength(fileLength);
             bitfield = new Bitfield(new byte[numPieces]);
         } else {
@@ -40,7 +41,7 @@ public class Datafile {
     }
 
     public void writePiece(byte[] data, int pieceIndex) {
-        synchronized(file) {
+        synchronized (file) {
             long pos = pieceIndex * pieceLength;
             try {
                 file.seek(pos);
@@ -52,13 +53,13 @@ public class Datafile {
     }
 
     public byte[] readPiece(int pieceIndex) {
-        synchronized(file) {
+        synchronized (file) {
             long pos = pieceIndex * pieceLength;
-            int length = Math.min(pieceLength, (int) (fileLength - pos - 1));
+            int length = Math.min(pieceLength, (int) (fileLength - pos));
             byte[] piece = new byte[length];
             try {
                 file.seek(pos);
-                file.read(piece, (int) pos, length);
+                file.read(piece, 0, length);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -67,7 +68,7 @@ public class Datafile {
     }
 
     public void close() throws IOException {
-        synchronized(file) {
+        synchronized (file) {
             file.close();
         }
     }
@@ -92,5 +93,7 @@ public class Datafile {
         return filename;
     }
 
-    public boolean isCompleted() { return bitfield.isCompleted(); }
+    public boolean isCompleted() {
+        return bitfield.isCompleted();
+    }
 }

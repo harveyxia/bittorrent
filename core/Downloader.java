@@ -1,7 +1,6 @@
 package core;
 
 import message.Bitfield;
-import message.MessageBuilder;
 import message.Piece;
 import utils.Datafile;
 import utils.Logger;
@@ -21,32 +20,14 @@ public class Downloader {
         this.logger = logger;
     }
 
-    public void sendInterested(Connection connection) {
-        byte[] interestedMessage = MessageBuilder.buildInterested();
-        MessageSender.sendMessage(connection.getSocket(), interestedMessage);
-        logger.log(" send INTERESTED to " + connection.getSocket());
-    }
-
-    public void sendNotInterested(Connection connection) {
-        byte[] notInterestedMessage = MessageBuilder.buildNotInterested();
-        MessageSender.sendMessage(connection.getSocket(), notInterestedMessage);
-        logger.log(" send NOT_INTERESTED to " + connection.getSocket());
-    }
-
-    public void sendHave(Connection connection, int pieceIndex) {
-        byte[] haveMessage = MessageBuilder.buildHave(pieceIndex);
-        MessageSender.sendMessage(connection.getSocket(), haveMessage);
-        logger.log(String.format(" send HAVE for pieceIndex:%d to " + connection.getSocket(), pieceIndex));
-    }
-
     public void receiveChoke(Connection connection) {
         connection.getDownloadState().setChoked(true);
-        logger.log(" receive CHOKE from " + connection.getSocket());
+        logger.log("receive CHOKE from " + connection.getSocket());
     }
 
     public void receiveUnchoke(Connection connection, Datafile datafile) {
         connection.getDownloadState().setChoked(false);
-        logger.log(" receive UNCHOKE from " + connection.getSocket());
+        logger.log("receive UNCHOKE from " + connection.getSocket());
         requestFirstAvailPiece(connection, datafile);   // request first available piece
     }
 
@@ -59,8 +40,8 @@ public class Downloader {
         connection.incrementBytesDownloaded(piece.getBlock().length);                       // 3. update bytes downloaded
         for (Map.Entry<Peer, Connection> peerConnection : connections.entrySet()) {         // 4. broadcast Have new piece to all peers
             if (!peerConnection.getValue().equals(connection)) {
-                sendHave(peerConnection.getValue(), piece.getPieceIndex());
-                logger.log(" send HAVE to " + peerConnection.getKey());
+                MessageSender.sendHave(peerConnection.getValue(), logger, piece.getPieceIndex());
+                logger.log("send HAVE to " + peerConnection.getKey());
             }
         }
         requestFirstAvailPiece(connection, datafile);                                        // 5. request next piece
@@ -68,23 +49,11 @@ public class Downloader {
     }
 
     public void receiveBitfield(Connection connection, Bitfield bitfield, Datafile datafile) {
-        logger.log(" receive BITFIELD " + bitfield + " from " + getPeerIpPort(connection));
+        logger.log("receive BITFIELD " + bitfield + " from " + getPeerIpPort(connection));
         connection.setBitfield(bitfield);               // set peer's bitfield
         if (!datafile.isCompleted()) {
-            sendInterested(connection);
+            MessageSender.sendInterested(connection, logger);
         }
-    }
-
-    // assume that pieces are downloaded in one go
-    public void sendRequest(Connection connection, int pieceIndex, int pieceLength) {
-        if (!connection.canDownloadFrom()) {
-            logger.log(" ERROR: cannot download from " + getPeerIpPort(connection));
-            return;
-        }
-        byte[] requestMessage = MessageBuilder.buildRequest(pieceIndex, 0, pieceLength);
-        MessageSender.sendMessage(connection.getSocket(), requestMessage);
-        logger.log(String.format(" send REQUEST for pieceIndex:%d, pieceLength:%d to " +
-                getPeerIpPort(connection), pieceIndex, pieceLength));
     }
 
     /**
@@ -92,12 +61,12 @@ public class Downloader {
      */
     private void requestFirstAvailPiece(Connection connection, Datafile datafile) {
         if (datafile.isCompleted()) {
-            logger.log(" datafile is complete! WOOOOOOOOOOOO!");
+            logger.log("datafile is complete! WOOOOOOOOOOOO!");
             return;
         }
         for (int i = 0; i < datafile.getNumPieces(); i++) {
             if (datafile.getBitfield().missingPiece(i) && connection.getBitfield().hasPiece(i)) {
-                sendRequest(connection, i, datafile.getPieceLength()); // request entire piece
+                MessageSender.sendRequest(connection, logger, i, datafile.getPieceLength()); // request entire piece
                 break;
             }
         }
@@ -105,5 +74,9 @@ public class Downloader {
 
     private String getPeerIpPort(Connection connection) {
         return connection.getSocket().getInetAddress() + ":" + connection.getSocket().getPort();
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 }
