@@ -2,3 +2,6 @@
 *.class
 .DS_Store
 *.iml
+tests/dataFolder1/*
+tests/dataFolder2/*
+tests/dataFolder3/*
