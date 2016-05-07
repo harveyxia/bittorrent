@@ -17,7 +17,7 @@ public class Uploader {
     }
 
     public void receiveInterested(Connection connection) {
-        logger.log(" receive INTERESTED from " + connection.getSocket());
+        logger.log(" receive INTERESTED from " + getPeerIpPort(connection));
         State state = connection.getUploadState();
         if (!state.isInterested() && state.isChoked()) {
             state.setInterested(true);
@@ -25,7 +25,7 @@ public class Uploader {
     }
 
     public void receiveUninterested(Connection connection) {
-        logger.log(" receive UNINTERESTED from " + connection.getSocket());
+        logger.log(" receive UNINTERESTED from " + getPeerIpPort(connection));
         State state = connection.getUploadState();
         if (state.isInterested() && state.isChoked()) {
             state.setInterested(false);
@@ -34,13 +34,16 @@ public class Uploader {
 
     public void receiveRequest(Connection connection, Datafile datafile, int pieceIndex) {
         if (!connection.canUploadTo()) {
-            logger.log(" ERROR: cannot upload to " + connection.getSocket().getInetAddress());
+            logger.log(" ERROR: cannot upload to " + getPeerIpPort(connection));
             return;
         }
         byte[] pieceMessage = MessageBuilder.buildPiece(pieceIndex, 0, datafile.readPiece(pieceIndex));
         MessageSender.sendMessage(connection.getSocket(), pieceMessage);
         logger.log(String.format(" receive REQUEST for pieceIndex:%d from " +
-                connection.getSocket().getInetAddress(), pieceIndex));
+                getPeerIpPort(connection), pieceIndex));
     }
 
+    private String getPeerIpPort(Connection connection) {
+        return connection.getSocket().getInetAddress() + ":" + connection.getSocket().getPort();
+    }
 }

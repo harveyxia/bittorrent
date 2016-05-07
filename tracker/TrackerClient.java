@@ -9,7 +9,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
- * Created by marvin on 5/2/16.
+ * The client's interface to the Tracker.
  */
 public class TrackerClient {
 
@@ -24,9 +24,7 @@ public class TrackerClient {
 
     public TrackerResponse update(TrackerRequest.Event event) throws IOException {
 
-        try (Socket socket = new Socket()) {
-            socket.bind(null);
-            socket.connect(server);
+        try (Socket socket = new Socket(server.getAddress(), server.getPort())) {
             OutputStream out = socket.getOutputStream();
             InputStream in = socket.getInputStream();
             TrackerRequest req = new TrackerRequest(event, client, datafile.getFilename());

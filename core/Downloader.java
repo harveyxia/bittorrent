@@ -67,22 +67,24 @@ public class Downloader {
         // TODO: what to do when completed
     }
 
-    public void receiveBitfield(Connection connection, Bitfield bitfield) {
-        logger.log(" receive BITFIELD " + bitfield + " from " + connection.getSocket().getInetAddress());
+    public void receiveBitfield(Connection connection, Bitfield bitfield, Datafile datafile) {
+        logger.log(" receive BITFIELD " + bitfield + " from " + getPeerIpPort(connection));
         connection.setBitfield(bitfield);               // set peer's bitfield
-        sendInterested(connection);
+        if (!datafile.isCompleted()) {
+            sendInterested(connection);
+        }
     }
 
     // assume that pieces are downloaded in one go
     public void sendRequest(Connection connection, int pieceIndex, int pieceLength) {
         if (!connection.canDownloadFrom()) {
-            logger.log(" ERROR: cannot download from " + connection.getSocket().getInetAddress());
+            logger.log(" ERROR: cannot download from " + getPeerIpPort(connection));
             return;
         }
         byte[] requestMessage = MessageBuilder.buildRequest(pieceIndex, 0, pieceLength);
         MessageSender.sendMessage(connection.getSocket(), requestMessage);
         logger.log(String.format(" send REQUEST for pieceIndex:%d, pieceLength:%d to " +
-                connection.getSocket().getInetAddress(), pieceIndex, pieceLength));
+                getPeerIpPort(connection), pieceIndex, pieceLength));
     }
 
     /**
@@ -99,5 +101,9 @@ public class Downloader {
                 break;
             }
         }
+    }
+
+    private String getPeerIpPort(Connection connection) {
+        return connection.getSocket().getInetAddress() + ":" + connection.getSocket().getPort();
     }
 }

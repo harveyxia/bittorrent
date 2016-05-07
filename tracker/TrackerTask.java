@@ -13,7 +13,6 @@ import java.net.Socket;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by marvin on 5/5/16.
@@ -36,7 +35,8 @@ public class TrackerTask implements Runnable {
     public void run() {
 
         try {
-            TrackerResponse response = trackerClient.update(TrackerRequest.Event.STARTED); // change event later
+            TrackerResponse response = trackerClient.update(TrackerRequest.Event.PING); // change event later
+            logger.log("Ping client");
             Set<Peer> peers = response.getPeers();
             // Remove no longer available peers
             for (Peer peer : connections.keySet()) {
@@ -47,40 +47,17 @@ public class TrackerTask implements Runnable {
                     connection.getSocket().close();
                 }
             }
-            // Add new peers
-            for (Peer peer : peers) {
-                if (!connections.containsKey(peer)) {
-                    connect(peer);
-                }
-            }
-            executor.schedule(this, response.getInterval(), TimeUnit.SECONDS);
+//            // Add new peers
+//            for (Peer peer : peers) {
+//                System.out.println("TrackerTask " + peer);
+//                if (!connections.containsKey(peer) && !isPeerEqualToMe(peer)) {
+//                    connect(peer);
+//                }
+//            }
+            //            executor.schedule(this, response.getInterval(), TimeUnit.SECONDS);
         } catch (IOException e) {
-            logger.log(e.toString());
-        }
-    }
-
-    private void connect(Peer peer) {
-
-        try {
-            logger.log("connecting to " + peer.getIp() + " at port " + peer.getPort());
-            InetSocketAddress client = trackerClient.getClient();
-            Socket socket = new Socket(peer.getIp(), peer.getPort(), client.getAddress(), client.getPort());
-            Connection connection = Connection.getInitialState(socket);
-            connections.put(peer, connection);
-            sendHandshake(connection, trackerClient.getDatafile());
-            sendBitfield(connection, trackerClient.getDatafile());
-        } catch (IOException e) {
+//            logger.log(e.toString());
             e.printStackTrace();
         }
-    }
-
-    private void sendHandshake(Connection connection, Datafile datafile) {
-        byte[] handshakeMessage = MessageBuilder.buildHandshake(datafile.getFilename());
-        MessageSender.sendMessage(connection.getSocket(), handshakeMessage);
-    }
-
-    private void sendBitfield(Connection connection, Datafile datafile) {
-        byte[] bitfieldMessage = MessageBuilder.buildBitfield(datafile.getBitfield().getByteArray());
-        MessageSender.sendMessage(connection.getSocket(), bitfieldMessage);
     }
 }

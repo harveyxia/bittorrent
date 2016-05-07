@@ -6,7 +6,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Created by marvin on 5/2/16.
+ * Class representing a request from client to tracker and vice versa.
  */
 public class TrackerRequest {
 
@@ -21,7 +21,6 @@ public class TrackerRequest {
     }
 
     public static TrackerRequest fromStream(InputStream in) throws IOException {
-
         DataInputStream dis = new DataInputStream(in);
         Event event = Event.values()[dis.readShort()];
         byte[] raw = new byte[4];
@@ -31,7 +30,8 @@ public class TrackerRequest {
         InetSocketAddress addr = new InetSocketAddress(ip, port);
         int length = dis.readInt();
         byte[] fileRaw = new byte[length];
-        dis.read(fileRaw);
+
+        dis.read(fileRaw, 0, length);
         String filename = new String(fileRaw, StandardCharsets.US_ASCII);
         return new TrackerRequest(event, addr, filename);
     }
@@ -43,7 +43,8 @@ public class TrackerRequest {
         dos.write(addr.getAddress().getAddress());
         dos.writeInt(addr.getPort());
         dos.writeInt(filename.length());
-        dos.writeBytes(filename);
+        dos.write(filename.getBytes(StandardCharsets.US_ASCII));
+        dos.flush();
     }
 
     public Event getEvent() {

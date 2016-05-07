@@ -58,7 +58,7 @@ public class RespondTask implements Runnable {
                 downloader.receivePiece(connection, connections, datafile, message.getPiece());
                 break;
             case BITFIELD_ID:
-                downloader.receiveBitfield(connection, message.getBitfield());
+                downloader.receiveBitfield(connection, message.getBitfield(), datafile);
                 break;
             case CHOKE_ID:
                 downloader.receiveChoke(connection);

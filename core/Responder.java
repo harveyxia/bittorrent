@@ -45,7 +45,7 @@ public class Responder implements Runnable {
                         continue;
                     }
                     Message message = MessageParser.parseMessage(input);
-                    logger.log(message.toString());
+//                    logger.log(message.getMessageID());
                     executor.submit(new RespondTask(downloader, uploader, connection, connections, message, datafile));
                 } catch (IOException e) {
                     e.printStackTrace();
