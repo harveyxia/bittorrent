@@ -20,60 +20,58 @@ public class Downloader {
         this.logger = logger;
     }
 
-    public void receiveChoke(Connection connection) {
+    public void receiveChoke(Connection connection, Peer peer) {
         connection.getDownloadState().setChoked(true);
-        logger.log("receive CHOKE from " + connection.getSocket());
+        logger.log("receive CHOKE from " + peer);
     }
 
-    public void receiveUnchoke(Connection connection, Datafile datafile) {
+    public void receiveUnchoke(Connection connection, Peer peer, Datafile datafile) {
         connection.getDownloadState().setChoked(false);
-        logger.log("receive UNCHOKE from " + connection.getSocket());
-        requestFirstAvailPiece(connection, datafile);   // request first available piece
+        logger.log("receive UNCHOKE from " + peer);
+        requestFirstAvailPiece(connection, peer, datafile);   // request first available piece
     }
 
     public void receivePiece(Connection connection,
+                             Peer peer,
                              ConcurrentMap<Peer, Connection> connections,
                              Datafile datafile,
                              Piece piece) {
+        logger.log(String.format("receive PIECE for pieceIndex:%d from " + peer, piece.getPieceIndex()));
         datafile.getBitfield().setPieceToCompleted(piece.getPieceIndex());                  // 1. update bitfield
         datafile.writePiece(piece.getBlock(), piece.getPieceIndex());                       // 2. write piece
         connection.incrementBytesDownloaded(piece.getBlock().length);                       // 3. update bytes downloaded
         for (Map.Entry<Peer, Connection> peerConnection : connections.entrySet()) {         // 4. broadcast Have new piece to all peers
             if (!peerConnection.getValue().equals(connection)) {
-                MessageSender.sendHave(peerConnection.getValue(), logger, piece.getPieceIndex());
+                MessageSender.sendHave(peerConnection.getValue(), peer, logger, piece.getPieceIndex());
                 logger.log("send HAVE to " + peerConnection.getKey());
             }
         }
-        requestFirstAvailPiece(connection, datafile);                                        // 5. request next piece
+        requestFirstAvailPiece(connection, peer, datafile);                                        // 5. request next piece
         // TODO: what to do when completed
     }
 
-    public void receiveBitfield(Connection connection, Bitfield bitfield, Datafile datafile) {
-        logger.log("receive BITFIELD " + bitfield + " from " + getPeerIpPort(connection));
+    public void receiveBitfield(Connection connection, Peer peer, Bitfield bitfield, Datafile datafile) {
+        logger.log("receive BITFIELD " + bitfield + " from " + peer);
         connection.setBitfield(bitfield);               // set peer's bitfield
         if (!datafile.isCompleted()) {
-            MessageSender.sendInterested(connection, logger);
+            MessageSender.sendInterested(connection, peer, logger);
         }
     }
 
     /**
      * Requests from peer the first missing piece that peer has.
      */
-    private void requestFirstAvailPiece(Connection connection, Datafile datafile) {
+    private void requestFirstAvailPiece(Connection connection, Peer peer, Datafile datafile) {
         if (datafile.isCompleted()) {
             logger.log("datafile is complete! WOOOOOOOOOOOO!");
             return;
         }
         for (int i = 0; i < datafile.getNumPieces(); i++) {
             if (datafile.getBitfield().missingPiece(i) && connection.getBitfield().hasPiece(i)) {
-                MessageSender.sendRequest(connection, logger, i, datafile.getPieceLength()); // request entire piece
+                MessageSender.sendRequest(connection, peer, logger, i, datafile.getPieceLength()); // request entire piece
                 break;
             }
         }
-    }
-
-    private String getPeerIpPort(Connection connection) {
-        return connection.getSocket().getInetAddress() + ":" + connection.getSocket().getPort();
     }
 
     public Logger getLogger() {

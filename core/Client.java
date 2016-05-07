@@ -108,8 +108,8 @@ public class Client {
 
             Connection connection = Connection.getInitialState(socket);
             connections.put(peer, connection);
-            MessageSender.sendHandshake(connection, logger, trackerClient.getDatafile(), trackerClient);
-            MessageSender.sendBitfield(connection, logger, trackerClient.getDatafile().getBitfield());
+            MessageSender.sendHandshake(connection, peer, logger, trackerClient.getDatafile(), trackerClient);
+            MessageSender.sendBitfield(connection, peer, logger, trackerClient.getDatafile().getBitfield());
         } catch (IOException e) {
             e.printStackTrace();
         }

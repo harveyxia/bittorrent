@@ -42,32 +42,32 @@ public class RespondTask implements Runnable {
     public void run() {
         switch (message.getMessageID()) {
             case HANDSHAKE_ID:
-                MessageSender.sendBitfield(connection, downloader.getLogger(), datafile.getBitfield());
+                MessageSender.sendBitfield(connection, peer, downloader.getLogger(), datafile.getBitfield());
                 break;
             case INTERESTED_ID:
                 // TODO: explicitly reject interested by sending choked?
                 uploader.receiveInterested(connection, peer);
                 break;
             case NOT_INTERESTED_ID:
-                uploader.receiveUninterested(connection);
+                uploader.receiveUninterested(connection, peer);
                 break;
             case HAVE_ID:
                 updatePeerBitfield(connection, message.getPieceIndex());
                 break;
             case REQUEST_ID:
-                uploader.receiveRequest(connection, datafile, message.getRequest().getPieceIndex());
+                uploader.receiveRequest(connection, peer, datafile, message.getRequest().getPieceIndex());
                 break;
             case PIECE_ID:
-                downloader.receivePiece(connection, connections, datafile, message.getPiece());
+                downloader.receivePiece(connection, peer, connections, datafile, message.getPiece());
                 break;
             case BITFIELD_ID:
-                downloader.receiveBitfield(connection, message.getBitfield(), datafile);
+                downloader.receiveBitfield(connection, peer, message.getBitfield(), datafile);
                 break;
             case CHOKE_ID:
-                downloader.receiveChoke(connection);
+                downloader.receiveChoke(connection, peer);
                 break;
             case UNCHOKE_ID:
-                downloader.receiveUnchoke(connection, datafile);
+                downloader.receiveUnchoke(connection, peer, datafile);
                 break;
         }
     }

@@ -20,7 +20,7 @@ public class Uploader {
     }
 
     public void receiveInterested(Connection connection, Peer peer) {
-        logger.log(" receive INTERESTED from " + connection.getSocket());
+        logger.log(" receive INTERESTED from " + peer);
         State state = connection.getUploadState();
         //        if (!state.isInterested() && state.isChoked()) {
         state.setInterested(true);
@@ -28,26 +28,26 @@ public class Uploader {
             System.out.println("Uploaded unchoked set contains " + peer1);
         }
         if (unchokedPeers.containsKey(peer)) {
-            MessageSender.sendUnchoke(connection, logger);
+            MessageSender.sendUnchoke(connection, peer, logger);
         }
         //        }
     }
 
-    public void receiveUninterested(Connection connection) {
-        logger.log("receive UNINTERESTED from " + connection.getSocket());
+    public void receiveUninterested(Connection connection, Peer peer) {
+        logger.log("receive UNINTERESTED from " + peer);
         State state = connection.getUploadState();
         //        if (state.isInterested() && state.isChoked()) {
         state.setInterested(false);
         //        }
     }
 
-    public void receiveRequest(Connection connection, Datafile datafile, int pieceIndex) {
-        logger.log(String.format("receive REQUEST for pieceIndex:%d from " + connection.getSocket(), pieceIndex));
+    public void receiveRequest(Connection connection, Peer peer, Datafile datafile, int pieceIndex) {
+        logger.log(String.format("receive REQUEST for pieceIndex:%d from " + peer, pieceIndex));
         if (!connection.canUploadTo()) {
-            logger.log("ERROR: cannot upload to " + connection.getSocket());
+            logger.log("ERROR: cannot upload to " + peer);
             return;
         }
-        MessageSender.sendPiece(connection, logger, pieceIndex, datafile);
+        MessageSender.sendPiece(connection, peer, logger, pieceIndex, datafile);
     }
 
     public ConcurrentHashMap<Peer, Float> getUnchokedPeers() {

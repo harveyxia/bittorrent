@@ -49,7 +49,7 @@ public class Welcomer implements Runnable {
                     Peer peer = new Peer(message.getPeerIp(), message.getPeerPort());
                     connections.put(peer, Connection.getInitialState(peerSocket));
 
-                    MessageSender.sendBitfield(connections.get(peer), logger, datafile.getBitfield());
+                    MessageSender.sendBitfield(connections.get(peer), peer, logger, datafile.getBitfield());
                     //                    byte[] bitfieldMessage = MessageBuilder.buildBitfield(datafile.getBitfield().getByteArray());
                     //                    MessageSender.sendMessage(peerSocket, bitfieldMessage);
                 } catch (IOException e) {

@@ -1,7 +1,7 @@
 {
     "info": {
         "filename": "testData.txt",
-        "fileLength": 10999,
+        "fileLength": 10995,
         "pieceLength": 256,
         "pieces": []
     },

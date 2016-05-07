@@ -86,14 +86,14 @@ public class Unchoker implements Runnable {
         for (Peer peer : oldUnchokedPeers.keySet()) {
             System.out.println("Old set contains " + peer);
             if (!newUnchokedPeers.containsKey(peer)) {
-                MessageSender.sendChoke(connections.get(peer), logger);
+                MessageSender.sendChoke(connections.get(peer), peer, logger);
             }
         }
         // go through new peers, if not in old peers, send UNCHOKE
         for (Peer peer : newUnchokedPeers.keySet()) {
             System.out.println("New set contains " + peer);
             if (!oldUnchokedPeers.containsKey(peer)) {
-                MessageSender.sendUnchoke(connections.get(peer), logger);
+                MessageSender.sendUnchoke(connections.get(peer), peer, logger);
             }
         }
     }
