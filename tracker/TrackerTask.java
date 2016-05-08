@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Created by marvin on 5/5/16.
+ * Client task that pings server and receives updated peer list.
  */
 public class TrackerTask implements Runnable {
 
@@ -37,7 +37,7 @@ public class TrackerTask implements Runnable {
 
         try {
             TrackerResponse response = trackerClient.update(TrackerRequest.Event.PING); // change event later
-            logger.log("Ping client");
+            logger.log("Ping tracker");
             Set<Peer> peers = response.getPeers();
 
             // Remove no longer available peers
