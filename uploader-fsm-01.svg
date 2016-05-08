@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 720 720" enable-background="new 0 0 720 720" xml:space="preserve">
+<circle fill="#FFFFFF" stroke="#000000" stroke-width="3" stroke-miterlimit="10" cx="192" cy="192" r="48"/>
+<rect x="160" y="160" fill="none" width="64" height="64"/>
+<text transform="matrix(1 0 0 1 160.3057 181.2998)"><tspan x="0" y="0" font-family="'MyriadPro-Regular'" font-size="30">C = 1</tspan><tspan x="5.1" y="36" font-family="'MyriadPro-Regular'" font-size="30">I = 0</tspan></text>
+<circle fill="#FFFFFF" stroke="#000000" stroke-width="3" stroke-miterlimit="10" cx="512" cy="192" r="48"/>
+<rect x="480" y="160" fill="none" width="64" height="64"/>
+<text transform="matrix(1 0 0 1 480.3057 181.2998)"><tspan x="0" y="0" font-family="'MyriadPro-Regular'" font-size="30">C = 1</tspan><tspan x="5.1" y="36" font-family="'MyriadPro-Regular'" font-size="30">I = 1</tspan></text>
+<circle fill="#FFFFFF" stroke="#000000" stroke-width="3" stroke-miterlimit="10" cx="192" cy="512" r="48"/>
+<rect x="160" y="480" fill="none" width="64" height="64"/>
+<text transform="matrix(1 0 0 1 160.3057 501.2998)"><tspan x="0" y="0" font-family="'MyriadPro-Regular'" font-size="30">C = 0</tspan><tspan x="5.1" y="36" font-family="'MyriadPro-Regular'" font-size="30">I = 0</tspan></text>
+<circle fill="#FFFFFF" stroke="#000000" stroke-width="3" stroke-miterlimit="10" cx="512" cy="512" r="48"/>
+<rect x="480" y="480" fill="none" width="64" height="64"/>
+<text transform="matrix(1 0 0 1 480.3057 501.2998)"><tspan x="0" y="0" font-family="'MyriadPro-Regular'" font-size="30">C = 0</tspan><tspan x="5.1" y="36" font-family="'MyriadPro-Regular'" font-size="30">I = 1</tspan></text>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-width="3" stroke-miterlimit="10" x1="64" y1="64" x2="136.4" y2="136.4"/>
+		<g>
+			<polygon points="129.6,140.1 144,144 140.1,129.6 			"/>
+		</g>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-width="3.1334" stroke-miterlimit="10" x1="256" y1="176" x2="436.8" y2="176"/>
+		<g>
+			<polygon points="434.5,183.8 448,176 434.5,168.2 			"/>
+		</g>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-width="3.1334" stroke-miterlimit="10" x1="448" y1="208" x2="267.2" y2="208"/>
+		<g>
+			<polygon points="269.5,200.2 256,208 269.5,215.8 			"/>
+		</g>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-width="3.1334" stroke-miterlimit="10" x1="448" y1="512" x2="267.2" y2="512"/>
+		<g>
+			<polygon points="269.5,504.2 256,512 269.5,519.8 			"/>
+		</g>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-width="3.1334" stroke-miterlimit="10" x1="496" y1="448" x2="496" y2="267.2"/>
+		<g>
+			<polygon points="503.8,269.5 496,256 488.2,269.5 			"/>
+		</g>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-width="3.1334" stroke-miterlimit="10" x1="528" y1="256" x2="528" y2="436.8"/>
+		<g>
+			<polygon points="520.2,434.5 528,448 535.8,434.5 			"/>
+		</g>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-width="3.1334" stroke-miterlimit="10" x1="192" y1="448" x2="192" y2="267.2"/>
+		<g>
+			<polygon points="199.8,269.5 192,256 184.2,269.5 			"/>
+		</g>
+	</g>
+</g>
+<rect x="272" y="112" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 277.541 126.1997)" font-family="'MyriadPro-Regular'" font-size="20">receive interested</text>
+<rect x="272" y="144" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 334.2803 158.1997)" font-family="'MyriadPro-Regular'" font-size="20">I = 1</text>
+<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" x1="272" y1="135.8" x2="432" y2="135.8"/>
+<rect x="256" y="224" fill="none" width="192" height="16"/>
+<text transform="matrix(1 0 0 1 266.4814 238.1997)" font-family="'MyriadPro-Regular'" font-size="20">receive uninterested</text>
+<rect x="272" y="256" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 334.2803 270.1997)" font-family="'MyriadPro-Regular'" font-size="20">I = 0</text>
+<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" x1="272" y1="247.8" x2="432" y2="247.8"/>
+<rect x="256" y="528" fill="none" width="192" height="16"/>
+<text transform="matrix(1 0 0 1 266.4814 542.1997)" font-family="'MyriadPro-Regular'" font-size="20">receive uninterested</text>
+<rect x="272" y="560" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 334.2803 574.1997)" font-family="'MyriadPro-Regular'" font-size="20">I = 0</text>
+<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" x1="272" y1="551.8" x2="432" y2="551.8"/>
+<rect x="544" y="328" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 561.791 342.1997)" font-family="'MyriadPro-Regular'" font-size="20">add peer to list</text>
+<rect x="544" y="360" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 565.4409 374.1997)" font-family="'MyriadPro-Regular'" font-size="20">send unchoke</text>
+<rect x="544" y="384" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 602.8706 398.1997)" font-family="'MyriadPro-Regular'" font-size="20">C = 0</text>
+<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" x1="544" y1="351.8" x2="704" y2="351.8"/>
+<rect x="304" y="328" fill="none" width="192" height="16"/>
+<text transform="matrix(1 0 0 1 310.7412 342.1997)" font-family="'MyriadPro-Regular'" font-size="20">remove peer from list</text>
+<rect x="320" y="360" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 352.5005 374.1997)" font-family="'MyriadPro-Regular'" font-size="20">send choke</text>
+<rect x="320" y="384" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 378.8706 398.1997)" font-family="'MyriadPro-Regular'" font-size="20">C = 1</text>
+<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" x1="320" y1="351.8" x2="480" y2="351.8"/>
+<rect y="328" fill="none" width="192" height="16"/>
+<text transform="matrix(1 0 0 1 6.7412 342.1997)" font-family="'MyriadPro-Regular'" font-size="20">remove peer from list</text>
+<rect x="16" y="360" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 48.5005 374.1997)" font-family="'MyriadPro-Regular'" font-size="20">send choke</text>
+<rect x="16" y="384" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 74.8706 398.1997)" font-family="'MyriadPro-Regular'" font-size="20">C = 1</text>
+<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" x1="16" y1="351.8" x2="176" y2="351.8"/>
+<rect x="512" y="624" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 512.4414 636.7798)" font-family="'MyriadPro-Regular'" font-size="18">receive piece request</text>
+<rect x="512" y="656" fill="none" width="160" height="16"/>
+<text transform="matrix(1 0 0 1 547.1909 670.1997)" font-family="'MyriadPro-Regular'" font-size="20">send piece</text>
+<line fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10" x1="512" y1="647.8" x2="672" y2="647.8"/>
+<g>
+	<g>
+		<path fill="none" stroke="#000000" stroke-width="3" stroke-miterlimit="10" d="M576,544c17.7,0,32,14.3,32,32s-14.3,32-32,32
+			c-14,0-25.8-8.9-30.2-21.4"/>
+		<g>
+			<polygon points="553.8,587.3 544,576 539.2,590.2 			"/>
+		</g>
+	</g>
+</g>
+</svg>

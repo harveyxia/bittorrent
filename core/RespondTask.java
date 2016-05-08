@@ -43,9 +43,10 @@ public class RespondTask implements Runnable {
         switch (message.getMessageID()) {
             case HANDSHAKE_ID:
                 MessageSender.sendBitfield(connection, peer, downloader.getLogger(), datafile.getBitfield());
+                connection.getSocket().getInetAddress()
+                        connection.getSocket().getPort()
                 break;
             case INTERESTED_ID:
-                // TODO: explicitly reject interested by sending choked?
                 uploader.receiveInterested(connection, peer);
                 break;
             case NOT_INTERESTED_ID:
