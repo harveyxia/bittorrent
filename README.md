@@ -65,7 +65,7 @@ The client is composed of two main parts. One part handles outgoing connections 
 
 These two parts of the client share a mapping from peers (IP-port pairs) to connection information. We identify a peer instance by its IP address and welcome socket port number.
 
-We implemented the peer-to-peer protocol (i.e., the "peer wire protocol") using two finite state machines, one for the download actions of a client and one for the upload actions of a client, as shown below. For each file, the client maintains a list of four peers. If the client hasn't completed downloading the file, then this list contains the four peers that have provided the fastest *download* rates. If the client has completed downloading the file, then this list contains the four peers that have provided the fastest *upload* rates.
+We implemented the peer-to-peer protocol using two finite state machines, one for the download actions of a client and one for the upload actions of a client, as shown below. For each file, the client maintains a list of four peers. If the client hasn't completed downloading the file, then this list contains the four peers that have provided the fastest *download* rates. If the client has completed downloading the file, then the list contains the four peers that have provided the fastest *upload* rates.
 
 #### Downloader FSM
 
@@ -88,5 +88,6 @@ Our implementation simplifies the protocol in a few ways:
 - Instead of downloading a piece from a peer one block at a time, we download a piece all at once.
 - We request pieces in simple sequential order instead of seeking the rarest piece first.
 - We do not implement optimistic unchoking. This does not affect files with at most 4 peers, which suffices for the tests that we've written.
+- Upon joining, a peer connects will all other peers. We could instead contact a fixed number of peers and allow any peer to initiate a connection with any other peer.
 
-Implementing any of these features would improve the performance of the application.
+Implementing any of these features would improve the speed or scalability of the application.
