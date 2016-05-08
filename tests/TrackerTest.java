@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Set;
+import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -22,11 +23,11 @@ import static org.junit.Assert.assertNull;
  */
 public class TrackerTest {
 
-    public static final String DIRECTORY = "someDirectory";
+    public static final String DIRECTORY = "tests/dataFolder1";
     public static final int FILE_LENGTH = 0;
     public static final int PIECE_LENGTH = 0;
     private static final int TRACKER_PORT = 8888;
-    private static final String FILE_NAME = "a";
+    private static final String FILE_NAME = "testData.txt";
     private Datafile datafile;
 
     // private InetAddress localHost;
@@ -139,16 +140,13 @@ public class TrackerTest {
 
         // check to see if peers are logged correctly
         Set<Peer> peers = resp.getPeers();
-        //    for (int i = 0; i < peers.size(); i++) {
-        //      Peer peer = peers.get(i);
-        //      assertEquals("PEER" + i, LOCAL_HOST, peer.getIp());
-        //      assertEquals("PEER" + i, base_client_port + i, peer.getPort());
-        //    }
-        int i = 0;
+        Set<Integer> ports = new HashSet<Integer>();
+        ports.add(base_client_port);
+        ports.add(base_client_port + 1);
+        ports.add(base_client_port + 2);
         for (Peer peer : peers) {
-            assertEquals(peer.toString(), LOCAL_HOST, peer.getIp());
-            assertEquals(peer.toString(), base_client_port + i, peer.getPort());
-            i++;
+            assertEquals("PEER1", LOCAL_HOST, peer.getIp());
+            assertEquals("PEER1", true, ports.remove(peer.getPort()));
         }
 
         // close one
@@ -164,16 +162,11 @@ public class TrackerTest {
 
         // check to see if peer 1 deleted properly
         peers = resp.getPeers();
-        //    for (int i = 0; i < peers.size(); i++) {
-        //      Peer peer = peers.get(i);
-        //      assertEquals("PEER" + i + 1, LOCAL_HOST, peer.getIp());
-        //      assertEquals("PEER" + i + 1, base_client_port + i + 1, peer.getPort());
-        //    }
-        i = 0;
+        ports.add(base_client_port + 1);
+        ports.add(base_client_port + 2);
         for (Peer peer : peers) {
-            assertEquals(peer.toString(), LOCAL_HOST, peer.getIp());
-            assertEquals(peer.toString(), base_client_port + i, peer.getPort());
-            i++;
+            assertEquals("PEER2", LOCAL_HOST, peer.getIp());
+            assertEquals("PEER2", true, ports.remove(peer.getPort()));
         }
 
         // close three
@@ -255,16 +248,24 @@ public class TrackerTest {
 
         // check to see if peer 3 deleted properly
         Set<Peer> peers = resp.getPeers();
-        //    for (int i = 0; i < peers.size(); i++) {
-        //      Peer peer = peers.get(i);
-        //      assertEquals("PEER" + i, LOCAL_HOST, peer.getIp());
-        //      assertEquals("PEER" + i, base_client_port + i, peer.getPort());
-        //    }
-        int i = 0;
+        // for (int i = 0; i < peers.size(); i++) {
+        //     Peer peer = peers.get(i);
+        //     assertEquals("PEER" + i, LOCAL_HOST, peer.getIp());
+        //     assertEquals("PEER" + i, base_client_port + i, peer.getPort());
+        // }
+        // int i = 0;
+        // for (Peer peer : peers) {
+        //     assertEquals("PEER" + i, LOCAL_HOST, peer.getIp());
+        //     assertEquals("PEER" + i, base_client_port + i, peer.getPort());
+        //     i++;
+        // }
+
+        Set<Integer>ports = new HashSet<Integer>();
+        ports.add(base_client_port);
+        ports.add(base_client_port + 1);
         for (Peer peer : peers) {
-            assertEquals(peer.toString(), LOCAL_HOST, peer.getIp());
-            assertEquals(peer.toString(), base_client_port + i, peer.getPort());
-            i++;
+            assertEquals("PEER1", LOCAL_HOST, peer.getIp());
+            assertEquals("PEER1", true, ports.remove(peer.getPort()));
         }
 
         // Bring peer 3 back

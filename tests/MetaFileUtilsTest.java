@@ -4,6 +4,8 @@ import metafile.Info;
 import metafile.MetaFile;
 import org.junit.Test;
 
+import java.net.InetSocketAddress;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -13,11 +15,11 @@ public class MetaFileUtilsTest {
 
     @Test
     public void testParseMetafile() throws Exception {
-        MetaFile metaFile = MetaFile.parseMetafile("test.torrent");
+        MetaFile metaFile = MetaFile.parseMetafile("tests/test.torrent");
         Info info = metaFile.getInfo();
-        assertEquals("localhost:6789", metaFile.getAnnounce());
+        assertEquals(new InetSocketAddress("localhost", 6789), metaFile.getAnnounce());
         assertEquals("testData.txt", info.getFilename());
         assertEquals(256, info.getPieceLength());
-        assertEquals(1000, info.getFileLength());
+        assertEquals(10988, info.getFileLength());
     }
 }
