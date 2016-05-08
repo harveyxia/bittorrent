@@ -50,7 +50,9 @@ In order to run a basic tracker + seeder + leecher setup, run each of the follow
 
 ### Client
 
-The client is composed of two main parts. One part handles outgoing connections to the tracker and peers. The other presents a welcome socket that handles incoming connections from other peers. These two parts of the client share a mapping from IP-port pairs to connection information. We identify a peer instance by its IP address and welcome socket port number.
+The client is composed of two main parts. One part handles outgoing connections to the tracker and peers. The other presents a welcome socket that handles incoming connections from other peers.
+
+These two parts of the client share a mapping from peers (IP-port pairs) to connection information. We identify a peer instance by its IP address and welcome socket port number.
 
 ### Tracker
 
