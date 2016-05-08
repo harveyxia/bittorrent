@@ -44,7 +44,7 @@ public class Tracker implements Runnable {
         }
         int trackerPort = Integer.parseInt(args[0]);
         Tracker tracker = new Tracker(trackerPort);
-        new Thread(tracker).start();
+        tracker.run();
     }
 
     public void run() {

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertNull;
  */
 public class TrackerTest {
 
-    public static final String DIRECTORY = "tests/dataFolder1";
+    public static final String DIRECTORY = "tests/download";
     public static final int FILE_LENGTH = 0;
     public static final int PIECE_LENGTH = 0;
     private static final int TRACKER_PORT = 8888;

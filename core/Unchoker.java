@@ -46,8 +46,6 @@ public class Unchoker implements Runnable {
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .limit(4)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        // TODO: send CHOKE to all removed peers
-        // TODO: send UNCHOKE to all newly added peers who are interested
 
         ConcurrentHashMap<Peer, Float> oldUnchokedPeers = unchokedPeers;
         unchokedPeers = new ConcurrentHashMap<>(sortedRates);
