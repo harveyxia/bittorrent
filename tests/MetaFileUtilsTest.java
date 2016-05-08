@@ -20,6 +20,6 @@ public class MetaFileUtilsTest {
         assertEquals(new InetSocketAddress("localhost", 6789), metaFile.getAnnounce());
         assertEquals("testData.txt", info.getFilename());
         assertEquals(256, info.getPieceLength());
-        assertEquals(10995, info.getFileLength());
+        assertEquals(11000, info.getFileLength());
     }
 }
