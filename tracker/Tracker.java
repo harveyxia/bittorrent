@@ -205,6 +205,7 @@ public class Tracker implements Runnable {
                 if (peers.contains(peer)) {
                     peers.remove(peer);
                     peerLists.put(fileName, peers);
+                    System.out.println("Removing peer " + peer.toString() + " for file " + fileName);
                 }
                 timer.cancel();
             }
