@@ -43,6 +43,8 @@ public class RespondTask implements Runnable {
         switch (message.getMessageID()) {
             case HANDSHAKE_ID:
                 MessageSender.sendBitfield(connection, peer, downloader.getLogger(), datafile.getBitfield());
+                connection.getSocket().getInetAddress()
+                        connection.getSocket().getPort()
                 break;
             case INTERESTED_ID:
                 uploader.receiveInterested(connection, peer);
