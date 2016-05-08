@@ -46,7 +46,7 @@ public class Downloader {
                 logger.log("send HAVE to " + peerConnection.getKey());
             }
         }
-        requestFirstAvailPiece(connection, peer, datafile);                                        // 5. request next piece
+        requestFirstAvailPiece(connection, peer, datafile);                                 // 5. request next piece
         // TODO: what to do when completed
     }
 

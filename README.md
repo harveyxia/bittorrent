@@ -1,3 +1,7 @@
+# Bittorrent
+
+This project is an implementation of the Bittorrent protocol. This includes a peer application that contacts a tracker server and exchanges data with other peers.
+
 ## How To Use
 
 To make:
@@ -7,6 +11,8 @@ To test:
 $ ./runtests.sh
 
 ## Project Structure
+
+The project is implement in two primary packages: core and tracker. The core package contains code for the client application and peer-to-peer communication. The tracker package contains code for the tracker and client-to-tracker communication.
 
 TorrentParser.java - parses a file and returns a Torrent object
 Torrent.java - object containing .torrent file fields
@@ -28,3 +34,14 @@ This implementation follows the protocol as described [here](https://wiki.theory
 `java -classpath .:lib/json-20160212.jar:lib/junit-4.12.jar core.Client Client1 6000 tests/test.torrent tests/dataFolder1 registerFile`
 
 `java -classpath .:lib/json-20160212.jar:lib/junit-4.12.jar core.Client Client2 7000 tests/test.torrent tests/dataFolder2`
+
+## Design
+
+
+
+### Core
+
+
+
+### Tracker
+
