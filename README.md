@@ -85,9 +85,10 @@ Note: C = amChoking and I = peerInterested.
 
 Our implementation simplifies the protocol in a few ways:
 
-- Instead of downloading a piece from a peer one block at a time, we download a piece all at once.
+- Instead of downloading a piece from a peer one block at a time, we download a piece all at once. Extending our implementation would involve sending and receiving data at block granularity.
+- We currently do not implement SHA1 verification of pieces. Implementing this feature would involve the receiving client, upon receiving a complete piece, to verify the integrity of that piece by computing its SHA1 hash and comparing it against the SHA1 hash for that piece as defined in the torrent metafile.
 - We request pieces in simple sequential order instead of seeking the rarest piece first.
 - We do not implement optimistic unchoking. This does not affect files with at most 4 peers, which suffices for the tests that we've written.
 - Upon joining, a peer connects will all other peers. We could instead contact a fixed number of peers and allow any peer to initiate a connection with any other peer.
 
-Implementing any of these features would improve the speed or scalability of the application.
+Implementing any of these features would improve the speed, scalability, or robustness of the application.
