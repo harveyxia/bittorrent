@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by marvin on 5/2/16.
+ * Class representing the tracker response, which contains a ping interval and a peer list for the requested file.
  */
 public class TrackerResponse {
 

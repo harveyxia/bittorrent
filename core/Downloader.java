@@ -47,7 +47,6 @@ public class Downloader {
             }
         }
         requestFirstAvailPiece(connection, peer, datafile);                                 // 5. request next piece
-        // TODO: what to do when completed
     }
 
     public void receiveBitfield(Connection connection, Peer peer, Bitfield bitfield, Datafile datafile) {

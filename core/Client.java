@@ -67,6 +67,7 @@ public class Client {
         executor.submit(new Responder(connections, unchokedPeers, datafile, executor, logger));
     }
 
+    // Get an initial peer list from the tracker and attempt to initiate connections with all peers.
     private static TrackerResponse getInitialTrackerResponse(TrackerClient trackerClient,
                                                              boolean registerFile,
                                                              ConcurrentMap<Peer, Connection> connections,

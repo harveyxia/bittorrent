@@ -45,7 +45,6 @@ public class RespondTask implements Runnable {
                 MessageSender.sendBitfield(connection, peer, downloader.getLogger(), datafile.getBitfield());
                 break;
             case INTERESTED_ID:
-                // TODO: explicitly reject interested by sending choked?
                 uploader.receiveInterested(connection, peer);
                 break;
             case NOT_INTERESTED_ID:
