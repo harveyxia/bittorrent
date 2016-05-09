@@ -1,0 +1,9 @@
+{
+	"info": {
+		"filename": "housing app.pdf",
+		"fileLength": 0,
+		"pieceLength": 256000,
+		"pieces": []
+	},
+	"announce": "localhost:9000"
+}

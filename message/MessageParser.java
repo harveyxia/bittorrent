@@ -104,7 +104,10 @@ public class MessageParser {
         int begin = byteToInt(beginArray);
         int blockLength = byteToInt(blockLengthArray);
         byte[] block = new byte[blockLength];
-        input.read(block, 0, blockLength);
+        int read = 0;
+        while (read < blockLength){
+            read += input.read(block, read, blockLength - read);
+        }
         Piece piece = new Piece(pieceIndex, begin, block);
         return new Message(Message.MessageID.PIECE_ID, piece);
     }
@@ -128,7 +131,7 @@ public class MessageParser {
     public static int readIntFromStream(InputStream inputStream) {
         byte[] i = new byte[MessageBuilder.intByteLength];
         try {
-            inputStream.read(i);
+            int j = inputStream.read(i);
         } catch (IOException e) {
             e.printStackTrace();
         }
