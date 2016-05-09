@@ -65,11 +65,13 @@ In order to run a basic tracker + seeder + leecher setup, run each of the follow
 
 ### Client
 
-The client is composed of two main parts. One part handles outgoing connections to peers. The other presents a welcome socket that handles incoming connections from other peers.
+The client serves as the interface for sharing and downloading a file. If the user has a file to share, he can advertise the file to the tracker and then share a torrent file so downloaders can find the file. If the user wants to download a file, he just needs to initiate the client with the associated torrent file. Downloading or uploading multiple files simply involves running multiple client instances--one for each file.
 
-These two parts of the client share a mapping from peers (IP-port pairs) to connection information. We identify a peer instance by its IP address and welcome socket port number.
+The implementation of the client consists of two main threads that can create separate tasks to be run on a thread pool. One of these threads simply presents a welcome socket and accepts new connections from peers. The other thread parses messages from the connection sockets of all connected peers. Once the messages are parsed, they are bundled into a task instance and passed to the thread pool for processing. In addition to these tasks, the client also has to query the tracker periodically for the updated peer list. This is done through scheduled tasks and allows the client to be robust to peer churn since it will quickly discover peers that have joined or left. Finally, an unchoker task also runs periodically in order to update which peers the client has decided to unchoke (i.e., upload to them).
 
-We implemented the peer-to-peer protocol using two finite state machines, one for the download actions of a client and one for the upload actions of a client, as shown below. For each file, the client maintains a list of four peers. If the client hasn't completed downloading the file, then this list contains the four peers that have provided the fastest *download* rates. If the client has completed downloading the file, then the list contains the four peers that have provided the fastest *upload* rates.
+For each peer (IP-port pair), the client keeps a set of connection information. This information includes the associated socket, the peer's bitfield, his upload rate to the client and download rate from the client, and choke/unchoke and interested/uninterested state for the protocol.
+
+We implemented the peer-to-peer protocol using two finite state machines, one for the download actions of a client and one for the upload actions of a client, as shown below. For each file, the client maintains a list of four peers. If the client hasn't completed downloading the file, then this list contains the four peers that have provided the fastest *download* rates. If the client has completed downloading the file (i.e., is now seeding), then the list contains the four peers that have provided the fastest *upload* rates. This tit-for-tat strategy provides incentive to upload quickly to your peers in order to receive more data in return.
 
 #### Downloader FSM
 
