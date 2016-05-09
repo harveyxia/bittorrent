@@ -85,25 +85,32 @@ Note: C = amChoking and I = peerInterested.
 
 ### Tracker
 
-The Tracker protocol was as follows. Its main job was to maintain a mapping from
-a file to a dictionary of peers currently downloading / uploading that file. For
-the purposes of the tracker, peers were stored as IP / port of their welcome
-socket, since that is how the peers would contact each other.
+The Tracker protocol was as follows. Its main job was to maintain a mapping from a file to a dictionary of peers currently downloading / uploading that file. For the purposes of the tracker, peers were stored as IP / port of their welcome socket, since that is how the peers would contact each other.
 
-At a high level, every peer was required to register with the tracker in order
-to get a list of peers. The tracker response included this dictionary of peers,
-as well as a timeout value during which the peer was expected to re-ping the
-tracker for an updated peer list. This pinging also served the purpose of
-notifying the tracker that the peer was still up and running, and if the peer
-did not respond within the timeout period, the the tracker assumed that the peer
-had died and removed it from its own peer list.
+At a high level, every peer was required to register with the tracker in order to get a list of peers. The tracker response included this dictionary of peers, as well as a timeout value during which the peer was expected to re-ping the tracker for an updated peer list. This pinging also served the purpose of notifying the tracker that the peer was still up and running, and if the peer did not respond within the timeout period, the the tracker assumed that the peer had died and removed it from its own peer list.
 
-Specifically, the tracker implemented the following messages, as specified in
-the BitTorrent protocol:
+Specifically, the tracker implemented the following messages, as specified in the BitTorrent protocol:
   - STARTED
+    The client sends this message when it wants to begin downloading a file. The tracker registers the peer in its map and sends a response with all the other peers for the file. The tracker also passes a TIMEOUT parameter that tells the client how often to PING the tracker.
   - COMPLETED
+    The client sends this message when it is done downloading a file. Because our tracker does not keep track of seeders and leechers, this message essentially doesn't do anything on the tracker end, except in the special case that the peer is trying to upload a file for the first time. In this case, the peer will send the tracker the COMPLETED message as its FIRST message, and the tracker will create a new entry in its map for the file (otherwise, all leechers for files that do not exist yet are just given a message to try again after TIMEOUT seconds).
   - STOPPED
+    The client sends this message when it is undergoing a graceful shut down. On receiving this message, the tracker removes the peer from the peer list for the file. Note that because the tracker removes all peers that do not respond within a certain period, this message is optional (as according to the BitTorrent protocol.)
   - PING
+    The client sends this message onces every ~TIMEOUT seconds to 1) let the tracker know that it is still up and running (and thus the tracker can pass out its information to peers for downloading), and to 2) get an updated peer list from the tracker.
+
+From an implementation perspective, there are three main components to the Tracker.java file:
+
+  - run (Tracker.java:54)
+  The main event loop. The tracker just waits on the welcome socket for incoming connections
+  - processReq (Tracker.java:82)
+  Accepts requests from run as they come in, and responds according to the message type, as detailed above
+  - stopTimer (Tracker.java:173), startTimer (Tracker.java:187), CheckTimeout (Tracker.java:203)
+  Takes care of timeout for peer PINGs. The tracker registers a timeout with startTimer every time it receives a valid STARTED or PING message. The tracker cancels the outstanding timeout for every valid STOPPED message. Finally, CheckTimeout merely takes the filename and peer pair, and removes that entry from the peerlist if the event actaully fires.
+
+The Tracker also relies on some helper files:
+
+
 
 ## Future Directions
 
