@@ -46,7 +46,11 @@ utils/Logger.java - Logging object
 
 This implementation follows the protocol as described [here](https://wiki.theory.org/BitTorrentSpecification). The protocol provides a way for users to share files in a peer-to-peer manner. Peers are divided into seeders or leechers. Seeders have the full file and only upload to those seeking to download the file. Those downloading the file are leechers, but they also help other leechers by uploading the parts of the file that they already own. Peers find each other via a tracker that keeps track of peers. The tracker is identified by a metadata file known as a torrent file.
 
-Once peers are connected, they can be either interested or not interested in each other's data. If they are interested, then they send an interested message to the other peer. The peer can then decide whether to choke or unchoke them. If they decide to choke them, then they refuse to upload to them for now. They may choose to unchoke them later. When a peer decides to unchoke another peer, then it notifies the other peer. That peer can now start requesting data and the peer should respond with the requested data. These relationships are bidirectional, one for uploading and one for downloading, but each direction is independent of the other. More detail about the protocol can be found at the link above.
+Once peers are connected, they can be either interested or not interested in each other's data. If they are interested, then they send an interested message to the other peer. The peer can then decide whether to choke or unchoke them. If they decide to choke them, then they refuse to upload to them for now. They may choose to unchoke them later. When a peer decides to unchoke another peer, then it notifies the other peer. That peer can now start requesting data and the peer should respond with the requested data. These relationships are bidirectional, one for uploading and one for downloading, but each direction is independent of the other. 
+
+In order to deal with churn, i.e. drop offline peers and discover new peers, peers must also ping the tracker every so often to 1) reregister themselves as a viable peer, and 2) receive the updated peer list with dead peers removed and new peers added.
+
+More detail about the protocol can be found at the link above.
 
 ## Run
 
