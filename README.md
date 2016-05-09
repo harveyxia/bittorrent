@@ -14,12 +14,15 @@ In this implementation, we sought to implement the peer-to-tracker and peer-to-p
 
 - Peers would sometimes attempt to simultaneously connect with one another. When this occurred, it was possible for two connections (one in each direction) to exist between to peers simultaneously, which is incorrect. To fix this issue, we added a policy so that only newly joined peers are responsible for initiating connections. This eliminates the race condition. However, this requires that newly joined peers connect with all other peers. While this would be infeasible for very large peer lists, at the scale of this implementation this design decision causes no issues.
 - The Bittorrent protocol specifies using a unique identifier for each peer. At first we thought this was only necessitated by local IP and NAT translation. Later we realized that we need a unique indentifier because each of the client's outgoing connections is bound to a random port that happens to be available. This means we can't rely on the values of `socket.getInetAddress()` and `socket.getPort()` to identify a peer. Instead throughout the application we identify peers by their IP and welcome socket port.
+- Because the protocol relies on a lot of TIMEOUTs, the application was multi-threaded by necessity. This meant that we had to be very careful with concurrency and multiple threads all needing to access and alter the same data structures.
 
 ## How To Use
 
 To make: `make`
 
 To test: `./runtests.sh`
+
+See section "Run" for how to spin up separate instances of seeders, leechers, tracker, and a sample run.
 
 ## Project Structure
 
@@ -112,7 +115,11 @@ From an implementation perspective, there are three main components to the Track
 
 The Tracker also relies on some helper files:
 
-
+  - TrackerRequest.java is a helper file for creating / parsing requests sent from the client to the tracker.
+  - TrackerResponse.java is a helper file for creating / parsing responses sent from the tracker to the client.
+  - TrackerTask.java is a thread that the Client schedules (Client.java:64) in order to ping the Tracker. Note that in order to account for network latency, we do not set the TIMEOUT to the actual advertised TIMEOUT value, but some slightly smaller value. We stress that this is in line with the protocol, since the advertised TIMEOUT value is only saying to contact the tracker at MOST after TIMEOUT seconds.
+  - TrackerClient.java is a wrapper class for the client's interface with the tracker. In particular, update (TrackerClient.java:25) takes parameters (such as what type of message to send) and forms the TrackerRequest, sends it to the tracker, and returns a TrackerResponse message.
+  
 
 ## Future Directions
 
