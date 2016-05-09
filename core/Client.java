@@ -63,8 +63,8 @@ public class Client {
         executor.scheduleAtFixedRate(new Unchoker(connections, datafile, unchokedPeers, logger), 0, UNCHOKE_INTERVAL, TimeUnit.SECONDS);
         executor.scheduleAtFixedRate(new TrackerTask(trackerClient, datafile.getFilename(), connections, executor, logger),
                 0, Math.max(initResponse.getInterval() * 1000 / 2, 1000), TimeUnit.MILLISECONDS);
-        executor.submit(new Welcomer(port, BACKLOG, connections, logger, datafile));
-        executor.submit(new Responder(connections, unchokedPeers, datafile, executor, logger));
+        new Thread(new Welcomer(port, BACKLOG, connections, logger, datafile)).start();
+        new Thread(new Responder(connections, unchokedPeers, datafile, executor, logger)).start();
     }
 
     // Get an initial peer list from the tracker and attempt to initiate connections with all peers.
