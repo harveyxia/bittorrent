@@ -17,14 +17,14 @@ import static org.junit.Assert.*;
 public class SeederLeecherTest {
 
     private static int TIMEOUT = 30;
-    private static String TORRENT = "tests/test.torrent";
+    private static String TORRENT = "tests/download/e2e.torrent";
     private static String DATA = "tests/data";
     private static String DOWNLOAD = "tests/download";
 
     @Test
     public void testSingleSeederSingleLeecher() throws Exception {
 
-        Process tracker = createTracker();
+        Process tracker = createTracker(1999);
         Thread.sleep(1000);
         Process seeder = createPeer("seeder", 2000, true);
         Thread.sleep(1000);
@@ -39,7 +39,7 @@ public class SeederLeecherTest {
     @Test
     public void testSingleSeederMultipleLeechers() throws Exception {
 
-        Process tracker = createTracker();
+        Process tracker = createTracker(2999);
         Thread.sleep(1000);
         Process seeder = createPeer("seeder", 3000, true);
         Thread.sleep(1000);
@@ -60,7 +60,7 @@ public class SeederLeecherTest {
     @Test
     public void testSingleSeederMultipleLeechersSeederDies() throws Exception {
 
-        Process tracker = createTracker();
+        Process tracker = createTracker(3999);
         Thread.sleep(1000);
         Process seeder = createPeer("seeder", 4000, true);
         Thread.sleep(1000);
@@ -78,9 +78,12 @@ public class SeederLeecherTest {
         killAll(tracker, seeder, leecher1, leecher2, leecher3);
     }
 
-    private Process createTracker() throws IOException {
+    private Process createTracker(int port) throws IOException {
 
-        ProcessBuilder trackerPB = new ProcessBuilder("java","tracker/Tracker","6789").redirectErrorStream(true);
+        writeTorrent(port);
+        ProcessBuilder trackerPB = new ProcessBuilder("java","tracker/Tracker",String.valueOf(port))
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.INHERIT);
         return trackerPB.start();
     }
 
@@ -88,7 +91,9 @@ public class SeederLeecherTest {
 
         ProcessBuilder pb;
         if (seeder) {
-            pb = new ProcessBuilder("java","-cp","lib/json-20160212.jar:.","core/Client", name, String.valueOf(port), TORRENT, DATA, "yeah");
+            pb = new ProcessBuilder("java","-cp","lib/json-20160212.jar:.","core/Client", name, String.valueOf(port), TORRENT, DATA, "yeah")
+                    .redirectErrorStream(true)
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT);
         } else {
             Path dir = Paths.get(DOWNLOAD, name);
             Files.createDirectories(dir);
@@ -134,7 +139,7 @@ public class SeederLeecherTest {
 
                     String line;
                     while ((line = br.readLine()) != null) {
-                        // System.out.println(line);
+                        System.out.println(line);
                         if (line.contains(match)) {
                             System.out.println("Matched");
                             break;
@@ -161,7 +166,7 @@ public class SeederLeecherTest {
 
                     String line;
                     while ((line = br.readLine()) != null) {
-                        // System.out.println(line);
+                        System.out.println(line);
                         if (line.contains(match)) {
                             System.out.println("Matched");
                             if (toKill.isAlive()) {
@@ -192,6 +197,22 @@ public class SeederLeecherTest {
 
         for (Process p : procs) {
             p.destroy();
+        }
+    }
+
+    private void writeTorrent(int port) throws IOException {
+
+        File f = new File(TORRENT);
+        try (PrintWriter w = new PrintWriter(f)) {
+            w.println("{");
+            w.println("\t\"info\": {");
+            w.println("\t\t\"filename\": \"testData.txt\",");
+            w.println("\t\t\"fileLength\": 11000,");
+            w.println("\t\t\"pieceLength\": 256,");
+            w.println("\t\t\"pieces\": []");
+            w.println("\t},");
+            w.println("\t\"announce\": \"localhost:"+String.valueOf(port)+"\"");
+            w.println("}");
         }
     }
 }
