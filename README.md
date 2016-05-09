@@ -152,7 +152,7 @@ MetaFileUtilsTest.java
   - Checks to see whether the MetaFileUtils class properly parses metafiles.
 
 SeederLeecherTest.java
-  - 
+  - Runs end-to-end tests with one leecher, three leechers, and three leechers with one of them failing in the middle of uploading to other peers. Checks to see that all leechers manage to get a full copy of the file.
 
 TrackerTest.java
   - Checks to see whether the Tracker is properly implemented
