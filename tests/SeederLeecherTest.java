@@ -6,8 +6,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,10 +30,10 @@ public class SeederLeecherTest {
         Thread.sleep(1000);
         Process leecher = createPeer("leecher", 2001, false);
 
-        shutdownHook(tracker, seeder, leecher);
-        Timer timer = startTimeout();
+        Timer timer = startTimeout(tracker, seeder, leecher);
         Thread t = matchLine(leecher, "datafile is complete");
         joinAll(timer, t);
+        killAll(tracker, seeder, leecher);
     }
 
     @Test
@@ -51,12 +49,12 @@ public class SeederLeecherTest {
         Thread.sleep(1000);
         Process leecher3 = createPeer("leecher3", 3003, false);
 
-        shutdownHook(tracker, seeder, leecher1, leecher2, leecher3);
-        Timer timer = startTimeout();
+        Timer timer = startTimeout(tracker, seeder, leecher1, leecher2, leecher3);
         Thread t1 = matchLine(leecher1, "datafile is complete");
         Thread t2 = matchLine(leecher2, "datafile is complete");
         Thread t3 = matchLine(leecher3, "datafile is complete");
         joinAll(timer, t1, t2, t3);
+        killAll(tracker, seeder, leecher1, leecher2, leecher3);
     }
 
     @Test
@@ -72,12 +70,12 @@ public class SeederLeecherTest {
         Thread.sleep(1000);
         Process leecher3 = createPeer("leecher3", 4003, false);
 
-        shutdownHook(tracker, seeder, leecher1, leecher2, leecher3);
-        Timer timer = startTimeout();
+        Timer timer = startTimeout(tracker, seeder, leecher1, leecher2, leecher3);
         Thread t1 = matchLineAndKill(leecher1, "datafile is complete", seeder);
         Thread t2 = matchLineAndKill(leecher2, "datafile is complete", seeder);
         Thread t3 = matchLineAndKill(leecher3, "datafile is complete", seeder);
         joinAll(timer, t1, t2, t3);
+        killAll(tracker, seeder, leecher1, leecher2, leecher3);
     }
 
     private Process createTracker() throws IOException {
@@ -105,19 +103,19 @@ public class SeederLeecherTest {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                for (Process p : procs) {
-                    p.destroy();
-                }
+                killAll(procs);
             }
         }));
     }
 
-    private Timer startTimeout() {
+    private Timer startTimeout(Process... procs) {
 
+        shutdownHook(procs);
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
+                killAll(procs);
                 fail("Timed out");
             }
         }, TIMEOUT * 1000);
@@ -188,5 +186,12 @@ public class SeederLeecherTest {
             t.join();
         }
         timer.cancel();
+    }
+
+    private void killAll(Process... procs) {
+
+        for (Process p : procs) {
+            p.destroy();
+        }
     }
 }
