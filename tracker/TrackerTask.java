@@ -39,6 +39,7 @@ public class TrackerTask implements Runnable {
             TrackerResponse response = trackerClient.update(TrackerRequest.Event.PING); // change event later
             logger.log("Ping tracker");
             Set<Peer> peers = response.getPeers();
+            logger.log(peers.toString());
 
             // Remove no longer available peers
             for (Peer peer : connections.keySet()) {
