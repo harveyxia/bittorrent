@@ -25,15 +25,19 @@ To test: `./runtests.sh`
 
 The project is implemented in two primary packages: core and tracker. The core package contains code for the client application and peer-to-peer communication. The tracker package contains code for the tracker and peer-to-tracker communication.
 
-TorrentParser.java - parses a file and returns a Torrent object
+metafile/Metafile.java - object representing torrent metafile, i.e. the .torrent file. Also parses a file and returns a Metafile object
 
-Torrent.java - object containing .torrent file fields
+tracker/Tracker.java - the server that responds to requests from peers
 
-Tracker.java - the server that responds to requests from peers
+core/Client.java - the bittorrent peer
 
-Client.java - the bittorrent peer
+core/Unchoker.java - Runnable that periodically runs the unchoke algorithm and updates the list of unchoked peers
 
-MessageUtils - creates and parses bittorrent messages
+message/* - Contains various classes that build and parse bittorrent messages over TCP
+
+utils/Datafile.java - object encapsulating data file, i.e. the file that is being downloaded and uploaded
+
+utils/Logger.java - Logging object
 
 ## Sources
 
