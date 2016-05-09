@@ -47,18 +47,9 @@ public class TrackerTask implements Runnable {
                     Connection connection = connections.get(peer);
                     connections.remove(peer);
                     logger.log("Removing peer " + peer + " for file " + fileName);
-                    // TODO do some other cleanup
                     connection.getSocket().close();
                 }
             }
-            //            // Add new peers
-            //            for (Peer peer : peers) {
-            //                System.out.println("TrackerTask " + peer);
-            //                if (!connections.containsKey(peer) && !isPeerEqualToMe(peer)) {
-            //                    connect(peer);
-            //                }
-            //            }
-            //            executor.schedule(this, response.getInterval(), TimeUnit.SECONDS);
         } catch (IOException e) {
             //            logger.log(e.toString());
             e.printStackTrace();

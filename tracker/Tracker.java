@@ -47,6 +47,10 @@ public class Tracker implements Runnable {
         tracker.run();
     }
 
+    /*
+     * MAIN EVENT LOOP
+     */
+
     public void run() {
         while (run) {
             try (Socket socket = welcomeSocket.accept()) {
@@ -58,7 +62,6 @@ public class Tracker implements Runnable {
                 if (resp != null)
                     resp.send(out);
             } catch (SocketTimeoutException e) {
-                // ignore
                 // used to retest run condition
             } catch (Exception e) {
                 e.printStackTrace();
@@ -68,7 +71,7 @@ public class Tracker implements Runnable {
         try {
             welcomeSocket.close();
         } catch (Exception e) {
-            // ignore
+            // ignore, we did our best
         }
     }
 
@@ -85,9 +88,9 @@ public class Tracker implements Runnable {
 
         switch (event) {
             case COMPLETED:
-                System.out.println("Completed: submitting file " + fileName);
                 // must be submitting a new file
                 if (!peerLists.containsKey(fileName)) {
+                    System.out.println("COMPLETED: submitting file " + fileName);
                     peers = new HashSet<>();
                     peers.add(peer);
                     peerLists.put(fileName, peers);
@@ -100,9 +103,9 @@ public class Tracker implements Runnable {
                 return null;
 
             case STARTED:
-                System.out.println("started");
-                // starting a new session but file doesn't exist
+                System.out.println("STARTED");
 
+                // starting a new session but file doesn't exist
                 if (!peerLists.containsKey(fileName)) {
                     return new TrackerResponse(TIMEOUT, 0, 0, null);
                 }
@@ -121,7 +124,8 @@ public class Tracker implements Runnable {
                 return new TrackerResponse(TIMEOUT, peers.size(), 0, peers);
 
             case STOPPED:
-                System.out.println("stopped");
+                System.out.println("STOPPED");
+
                 // stupid request
                 if (!peerLists.containsKey(fileName)) {
                     break;
@@ -137,6 +141,8 @@ public class Tracker implements Runnable {
                 return null;
 
             default:
+                // for default, we just assume that it is a PING
+                System.out.println("PING");
 
                 // stupid request
                 if (!peerLists.containsKey(fileName)) {
@@ -158,6 +164,12 @@ public class Tracker implements Runnable {
         return new TrackerResponse(-1, 0, 0, null);
     }
 
+
+    /*
+     * TIMEOUT / TIMER FUNCTIONS
+     */
+
+    // stops the timer for a particular filename / peer pair
     public void stopTimer(String fileName, Peer peer) {
         ConcurrentHashMap<Peer, Timer> timers;
         if (timerList.containsKey(fileName)) {
@@ -170,6 +182,8 @@ public class Tracker implements Runnable {
         }
     }
 
+    // first stops a timer (if it exists), then starts a new timer for a
+    // particular filename / peer pair
     public void startTimer(String fileName, Peer peer) {
         ConcurrentHashMap<Peer, Timer> timers;
 
@@ -180,12 +194,12 @@ public class Tracker implements Runnable {
 
         timers = timerList.get(fileName);
         Timer timer = new Timer();
-        // TODO: concurrency issues.
         timers.put(peer, timer);
         timerList.put(fileName, timers);
         timer.schedule(new CheckTimeout(this, fileName, peer, timer), TIMEOUT * 1000);
     }
 
+    // timer task for implementing timeouts
     public class CheckTimeout extends TimerTask {
         private String fileName;
         private Peer peer;
