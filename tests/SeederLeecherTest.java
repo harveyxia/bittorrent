@@ -32,7 +32,8 @@ public class SeederLeecherTest {
 
         Timer timer = startTimeout(tracker, seeder, leecher);
         Thread t = matchLine(leecher, "datafile is complete");
-        joinAll(timer, t);
+        joinAll(t);
+        timer.cancel();
         killAll(tracker, seeder, leecher);
     }
 
@@ -53,7 +54,8 @@ public class SeederLeecherTest {
         Thread t1 = matchLine(leecher1, "datafile is complete");
         Thread t2 = matchLine(leecher2, "datafile is complete");
         Thread t3 = matchLine(leecher3, "datafile is complete");
-        joinAll(timer, t1, t2, t3);
+        joinAll(t1, t2, t3);
+        timer.cancel();
         killAll(tracker, seeder, leecher1, leecher2, leecher3);
     }
 
@@ -67,14 +69,21 @@ public class SeederLeecherTest {
         Process leecher1 = createPeer("leecher1", 4001, false);
         Thread.sleep(1000);
         Process leecher2 = createPeer("leecher2", 4002, false);
-        Thread.sleep(1000);
-        Process leecher3 = createPeer("leecher3", 4003, false);
 
-        Timer timer = startTimeout(tracker, seeder, leecher1, leecher2, leecher3);
+        Timer timer = startTimeout(tracker, seeder, leecher1, leecher2);
         Thread t1 = matchLineAndKill(leecher1, "datafile is complete", seeder);
         Thread t2 = matchLineAndKill(leecher2, "datafile is complete", seeder);
-        Thread t3 = matchLineAndKill(leecher3, "datafile is complete", seeder);
-        joinAll(timer, t1, t2, t3);
+        joinAll(t1, t2);
+        timer.cancel();
+
+        Process leecher3 = createPeer("leecher3", 4003, false);
+        Timer newTimer = startTimeout(tracker, seeder, leecher1, leecher2, leecher3);
+        Thread t3 = matchLineAndKill(leecher3, "receive PIECE", leecher1);
+        joinAll(t3);
+        Thread t4 = matchLine(leecher3, "datafile is complete");
+        joinAll(t4);
+        newTimer.cancel();
+
         killAll(tracker, seeder, leecher1, leecher2, leecher3);
     }
 
@@ -159,11 +168,9 @@ public class SeederLeecherTest {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                try (
-                        InputStream in = p.getInputStream();
-                        BufferedReader br = new BufferedReader(new InputStreamReader(in))
-                ) {
-
+                try {
+                    InputStream in = p.getInputStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
                     String line;
                     while ((line = br.readLine()) != null) {
                         System.out.println(line);
@@ -185,12 +192,11 @@ public class SeederLeecherTest {
         return t;
     }
 
-    private void joinAll(Timer timer, Thread... threads) throws InterruptedException {
+    private void joinAll(Thread... threads) throws InterruptedException {
 
         for (Thread t : threads) {
             t.join();
         }
-        timer.cancel();
     }
 
     private void killAll(Process... procs) {
