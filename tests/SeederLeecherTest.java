@@ -32,11 +32,11 @@ public class SeederLeecherTest {
         Thread.sleep(1000);
         Process leecher = createLeecher("leecher", 2001);
 
-        Timer timer = startTimeout(tracker, seeder, leecher);
+        Timer timer = startTimeout(seeder, leecher, tracker);
         Thread t = matchLine(leecher, "datafile is complete");
         joinAll(t);
         timer.cancel();
-        killAll(tracker, seeder, leecher);
+        killAll(seeder, leecher, tracker);
     }
 
     @Test
@@ -52,13 +52,13 @@ public class SeederLeecherTest {
         Thread.sleep(1000);
         Process leecher3 = createLeecher("leecher3", 3003);
 
-        Timer timer = startTimeout(tracker, seeder, leecher1, leecher2, leecher3);
+        Timer timer = startTimeout(seeder, leecher1, leecher2, leecher3, tracker);
         Thread t1 = matchLine(leecher1, "datafile is complete");
         Thread t2 = matchLine(leecher2, "datafile is complete");
         Thread t3 = matchLine(leecher3, "datafile is complete");
         joinAll(t1, t2, t3);
         timer.cancel();
-        killAll(tracker, seeder, leecher1, leecher2, leecher3);
+        killAll(seeder, leecher1, leecher2, leecher3, tracker);
     }
 
     @Test
@@ -72,21 +72,21 @@ public class SeederLeecherTest {
         Thread.sleep(1000);
         Process leecher2 = createLeecher("leecher2", 4002);
 
-        Timer timer = startTimeout(tracker, seeder, leecher1, leecher2);
+        Timer timer = startTimeout(seeder, leecher1, leecher2, tracker);
         Thread t1 = matchLineAndKill(leecher1, "datafile is complete", seeder);
         Thread t2 = matchLineAndKill(leecher2, "datafile is complete", seeder);
         joinAll(t1, t2);
         timer.cancel();
 
         Process leecher3 = createLeecher("leecher3", 4003);
-        Timer newTimer = startTimeout(tracker, seeder, leecher1, leecher2, leecher3);
+        Timer newTimer = startTimeout(seeder, leecher1, leecher2, leecher3, tracker);
         Thread t3 = matchLineAndKill(leecher3, "receive PIECE", leecher1);
         joinAll(t3);
         Thread t4 = matchLine(leecher3, "datafile is complete");
         joinAll(t4);
         newTimer.cancel();
 
-        killAll(tracker, seeder, leecher1, leecher2, leecher3);
+        killAll(seeder, leecher1, leecher2, leecher3, tracker);
     }
 
     private Process createTracker(int port) throws IOException {
