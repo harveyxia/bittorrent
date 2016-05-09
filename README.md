@@ -136,6 +136,25 @@ The Tracker also relies on some helper files:
   - TrackerTask.java is a thread that the Client schedules (Client.java:64) in order to ping the Tracker. Note that in order to account for network latency, we do not set the TIMEOUT to the actual advertised TIMEOUT value, but some slightly smaller value. We stress that this is in line with the protocol, since the advertised TIMEOUT value is only saying to contact the tracker at MOST after TIMEOUT seconds.
   - TrackerClient.java is a wrapper class for the client's interface with the tracker. In particular, update (TrackerClient.java:25) takes parameters (such as what type of message to send) and forms the TrackerRequest, sends it to the tracker, and returns a TrackerResponse message.
   
+## Testing
+
+TestRunner.java
+  - The class for running the tests. For this project we used the Junit framework.
+
+MessageBuilderTest.java
+  - Checks to see whether the MessageBuilder class is implemented correctly. The MessageBuilder is a helper that creates all the message types.
+
+MessageParserTest.java
+  - Checks to see whether the MessageParser class is implemented correctly. The MessageParser is a helper that parses all the message types.
+
+MetaFileUtilsTest.java
+  - Checks to see whether the MetaFileUtils class properly parses metafiles.
+
+SeederLeecherTest.java
+  - 
+
+TrackerTest.java
+  - 
 
 ## Future Directions
 
