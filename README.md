@@ -55,11 +55,11 @@ In order to run a basic tracker + seeder + leecher setup, run each of the follow
 
 #### Seeder
 
-`java -classpath .:lib/json-20160212.jar:lib/junit-4.12.jar core.Client Client1 6000 tests/test.torrent tests/dataFolder1 registerFile`
+`java -cp .:lib/json-20160212.jar core.Client Client1 6000 tests/test.torrent tests/data registerFile`
 
 #### Leecher
 
-`java -classpath .:lib/json-20160212.jar:lib/junit-4.12.jar core.Client Client2 7000 tests/test.torrent tests/dataFolder2`
+`java -cp .:lib/json-20160212.jar core.Client Client2 7000 tests/test.torrent tests/download`
 
 ## Design
 
