@@ -23,7 +23,7 @@ To make: `make`
 
 To test: `./runtests.sh`
 
-See section "Run" for how to spin up separate instances of seeders, leechers, tracker, and a sample run.
+See section "Run" for how to spin up your own instances of seeders, leechers, tracker, and a sample run.
 
 ## Project Structure
 
@@ -146,5 +146,6 @@ Our implementation simplifies the protocol in a few ways:
 - We request pieces in simple sequential order instead of seeking the rarest piece first.
 - We do not implement optimistic unchoking. This does not affect files with at most 4 peers, which suffices for the tests that we've written.
 - Upon joining, a peer connects will all other peers. We could instead contact a fixed number of peers and allow any peer to initiate a connection with any other peer.
+- We assume that all the nodes (tracker + peers) have to be on the same network, otherwise the ports will be all wrong due to network address translation.
 
 Implementing any of these features would improve the speed, scalability, or robustness of the application.
