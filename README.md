@@ -155,7 +155,10 @@ SeederLeecherTest.java
   - 
 
 TrackerTest.java
-  - 
+  - Checks to see whether the Tracker is properly implemented
+    - testNewFile (TrackerTest.java:45) sees whether peers can properly register new files with the COMPLETED message
+    - testPeerList (TrackerTest.java:87) makes sure that peers sending STARTED and STOPPED messages are properly registered by the tracker. This is end-to-end tested by seeing whether the peer list returned by the Tracker in response to PING messages properly reflects the updates.
+    - testTimeOut (TrackerTest.java:195) makes sure that peers that do not PING within the specified TIMEOUT are removed by the tracker. This is end-to-end tested by seeing whether the peer list returned by the Tracker in response to PING messages properly reflects the updates.
 
 ## Future Directions
 
