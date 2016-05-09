@@ -76,6 +76,26 @@ Note: C = amChoking and I = peerInterested.
 
 ### Tracker
 
+The Tracker protocol was as follows. Its main job was to maintain a mapping from
+a file to a dictionary of peers currently downloading / uploading that file. For
+the purposes of the tracker, peers were stored as IP / port of their welcome
+socket, since that is how the peers would contact each other.
+
+At a high level, every peer was required to register with the tracker in order
+to get a list of peers. The tracker response included this dictionary of peers,
+as well as a timeout value during which the peer was expected to re-ping the
+tracker for an updated peer list. This pinging also served the purpose of
+notifying the tracker that the peer was still up and running, and if the peer
+did not respond within the timeout period, the the tracker assumed that the peer
+had died and removed it from its own peer list.
+
+Specifically, the tracker implemented the following messages, as specified in
+the BitTorrent protocol:
+  - STARTED
+  - COMPLETED
+  - STOPPED
+  - PING
+
 ## Future Directions
 
 Our implementation simplifies the protocol in a few ways:
