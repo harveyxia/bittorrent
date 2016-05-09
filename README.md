@@ -63,11 +63,12 @@ In order to run a basic tracker + seeder + leecher setup, run each of the follow
 
 #### Seeder
 
-`java -classpath .:lib/json-20160212.jar:lib/junit-4.12.jar core.Client Client1 6000 tests/test.torrent tests/dataFolder1 registerFile`
+`java -cp .:lib/json-20160212.jar core.Client Client1 6000 file/to/share trackerHostname/IP trackerPort`
+This also creates a torrent file for the file you're trying to share. This should be given to the leecher so that he can download the file.
 
 #### Leecher
 
-`java -classpath .:lib/json-20160212.jar:lib/junit-4.12.jar core.Client Client2 7000 tests/test.torrent tests/dataFolder2`
+`java -cp .:lib/json-20160212.jar core.Client Client2 7000 path/to/torrent downloads/directory`
 
 ## Design
 

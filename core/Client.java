@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -23,25 +25,38 @@ public class Client {
 
     private static final int NUM_THREADS = 8;
     private static final int BACKLOG = 10;
-    private static final String CMD_USAGE = "java Client name port metafile directory [registerFile]";
-    private static final int UNCHOKE_INTERVAL = 5; // TODO: CHANGE TO 10
+    private static final String CMD_USAGE = "NORMAL: java Client name port metafile directory\n" +
+            "SHARING: java Client name port file trackerIP trackerPort";
+    private static final int UNCHOKE_INTERVAL = 5;
 
     public static void main(String[] args) throws IOException {
-        boolean registerFile = false;
+
         if (args.length < 4 || args.length > 5) {
             System.out.println(args.length);
             System.out.println(CMD_USAGE);
             return;
         }
 
-        if (args.length == 5) {
-            registerFile = true;
-        }
-
         Logger logger = new Logger(args[0]);
         int port = Integer.parseInt(args[1]);
-        MetaFile metaFile = MetaFile.parseMetafile(args[2]);
-        String directory = args[3];
+
+        boolean registerFile;
+        MetaFile metaFile;
+        String directory;
+        if (args.length == 4) {
+            registerFile = false;
+            metaFile = MetaFile.parseMetafile(args[2]);
+            directory = args[3];
+        } else {
+            registerFile = true;
+            Path filePath = Paths.get(args[2]);
+            Path torrentPath = Paths.get(filePath.getParent().toString(), filePath.getFileName()+".torrent");
+            MetaFile.writeTorrent(torrentPath.toFile(), filePath.toFile(), args[3], args[4]);
+            metaFile = MetaFile.parseMetafile(torrentPath.toString());
+            directory = filePath.getParent().toString();
+        }
+
+
         boolean createEmptyFile = !registerFile;        // if not registering new file
         Datafile datafile = new Datafile(
                 createEmptyFile,

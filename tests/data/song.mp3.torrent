@@ -1,0 +1,9 @@
+{
+	"info": {
+		"filename": "song.mp3",
+		"fileLength": 3425071,
+		"pieceLength": 256000,
+		"pieces": []
+	},
+	"announce": "localhost:1999"
+}

@@ -1,8 +1,10 @@
 package tests;
 
+import metafile.MetaFile;
 import org.junit.Test;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,8 +19,8 @@ import static org.junit.Assert.*;
 public class SeederLeecherTest {
 
     private static int TIMEOUT = 30;
-    private static String TORRENT = "tests/download/e2e.torrent";
-    private static String DATA = "tests/data";
+    private static String TORRENT = "tests/data/song.mp3.torrent";
+    private static String DATA = "tests/data/song.mp3";
     private static String DOWNLOAD = "tests/download";
 
     @Test
@@ -26,9 +28,9 @@ public class SeederLeecherTest {
 
         Process tracker = createTracker(1999);
         Thread.sleep(1000);
-        Process seeder = createPeer("seeder", 2000, true);
+        Process seeder = createSeeder("seeder", 2000, 1999);
         Thread.sleep(1000);
-        Process leecher = createPeer("leecher", 2001, false);
+        Process leecher = createLeecher("leecher", 2001);
 
         Timer timer = startTimeout(tracker, seeder, leecher);
         Thread t = matchLine(leecher, "datafile is complete");
@@ -42,13 +44,13 @@ public class SeederLeecherTest {
 
         Process tracker = createTracker(2999);
         Thread.sleep(1000);
-        Process seeder = createPeer("seeder", 3000, true);
+        Process seeder = createSeeder("seeder", 3000, 2999);
         Thread.sleep(1000);
-        Process leecher1 = createPeer("leecher1", 3001, false);
+        Process leecher1 = createLeecher("leecher1", 3001);
         Thread.sleep(1000);
-        Process leecher2 = createPeer("leecher2", 3002, false);
+        Process leecher2 = createLeecher("leecher2", 3002);
         Thread.sleep(1000);
-        Process leecher3 = createPeer("leecher3", 3003, false);
+        Process leecher3 = createLeecher("leecher3", 3003);
 
         Timer timer = startTimeout(tracker, seeder, leecher1, leecher2, leecher3);
         Thread t1 = matchLine(leecher1, "datafile is complete");
@@ -64,11 +66,11 @@ public class SeederLeecherTest {
 
         Process tracker = createTracker(3999);
         Thread.sleep(1000);
-        Process seeder = createPeer("seeder", 4000, true);
+        Process seeder = createSeeder("seeder", 4000, 3999);
         Thread.sleep(1000);
-        Process leecher1 = createPeer("leecher1", 4001, false);
+        Process leecher1 = createLeecher("leecher1", 4001);
         Thread.sleep(1000);
-        Process leecher2 = createPeer("leecher2", 4002, false);
+        Process leecher2 = createLeecher("leecher2", 4002);
 
         Timer timer = startTimeout(tracker, seeder, leecher1, leecher2);
         Thread t1 = matchLineAndKill(leecher1, "datafile is complete", seeder);
@@ -76,7 +78,7 @@ public class SeederLeecherTest {
         joinAll(t1, t2);
         timer.cancel();
 
-        Process leecher3 = createPeer("leecher3", 4003, false);
+        Process leecher3 = createLeecher("leecher3", 4003);
         Timer newTimer = startTimeout(tracker, seeder, leecher1, leecher2, leecher3);
         Thread t3 = matchLineAndKill(leecher3, "receive PIECE", leecher1);
         joinAll(t3);
@@ -89,26 +91,27 @@ public class SeederLeecherTest {
 
     private Process createTracker(int port) throws IOException {
 
-        writeTorrent(port);
+        MetaFile.writeTorrent(new File(TORRENT), new File(DATA), "localhost", String.valueOf(port));
         ProcessBuilder trackerPB = new ProcessBuilder("java","tracker/Tracker",String.valueOf(port))
                 .redirectErrorStream(true)
                 .redirectOutput(ProcessBuilder.Redirect.INHERIT);
         return trackerPB.start();
     }
 
-    private Process createPeer(String name, int port, boolean seeder) throws IOException {
+    private Process createSeeder(String name, int port, int trackerPort) throws IOException {
 
-        ProcessBuilder pb;
-        if (seeder) {
-            pb = new ProcessBuilder("java","-cp","lib/json-20160212.jar:.","core/Client", name, String.valueOf(port), TORRENT, DATA, "yeah")
-                    .redirectErrorStream(true)
-                    .redirectOutput(ProcessBuilder.Redirect.INHERIT);
-        } else {
-            Path dir = Paths.get(DOWNLOAD, name);
-            Files.createDirectories(dir);
-            pb = new ProcessBuilder("java","-cp","lib/json-20160212.jar:.","core/Client", name, String.valueOf(port), TORRENT, dir.toString());
-        }
-        pb.redirectErrorStream(true);
+        ProcessBuilder pb = new ProcessBuilder("java","-cp","lib/json-20160212.jar:.","core/Client", name, String.valueOf(port), DATA, "localhost", String.valueOf(trackerPort))
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.INHERIT);
+        return pb.start();
+    }
+
+    private Process createLeecher(String name, int port) throws IOException {
+
+        Path dir = Paths.get(DOWNLOAD, name);
+        Files.createDirectories(dir);
+        ProcessBuilder pb = new ProcessBuilder("java","-cp","lib/json-20160212.jar:.","core/Client", name, String.valueOf(port), TORRENT, dir.toString())
+                .redirectErrorStream(true);
         return pb.start();
     }
 
@@ -203,22 +206,6 @@ public class SeederLeecherTest {
 
         for (Process p : procs) {
             p.destroy();
-        }
-    }
-
-    private void writeTorrent(int port) throws IOException {
-
-        File f = new File(TORRENT);
-        try (PrintWriter w = new PrintWriter(f)) {
-            w.println("{");
-            w.println("\t\"info\": {");
-            w.println("\t\t\"filename\": \"testData.txt\",");
-            w.println("\t\t\"fileLength\": 11000,");
-            w.println("\t\t\"pieceLength\": 256,");
-            w.println("\t\t\"pieces\": []");
-            w.println("\t},");
-            w.println("\t\"announce\": \"localhost:"+String.valueOf(port)+"\"");
-            w.println("}");
         }
     }
 }

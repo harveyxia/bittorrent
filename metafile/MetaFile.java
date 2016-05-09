@@ -3,9 +3,13 @@ package metafile;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -57,6 +61,21 @@ public class MetaFile {
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static void writeTorrent(File f, File data, String host, String port) throws IOException {
+
+        try (PrintWriter w = new PrintWriter(f)) {
+            w.println("{");
+            w.println("\t\"info\": {");
+            w.println("\t\t\"filename\": \""+data.getName()+"\",");
+            w.println("\t\t\"fileLength\": "+data.length()+",");
+            w.println("\t\t\"pieceLength\": 256000,");
+            w.println("\t\t\"pieces\": []");
+            w.println("\t},");
+            w.println("\t\"announce\": \""+host+":"+port+"\"");
+            w.println("}");
         }
     }
 
