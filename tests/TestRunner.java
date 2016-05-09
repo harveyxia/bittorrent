@@ -6,7 +6,7 @@ import org.junit.runner.notification.Failure;
 
 public class TestRunner {
     public static void main(String[] args) {
-        Class[] classes = {SeederLeecherTest.class};
+        Class[] classes = {MessageBuilderTest.class, MessageParserTest.class, MetaFileUtilsTest.class, TrackerTest.class, SeederLeecherTest.class};
 
         System.out.println("\n==================");
         System.out.println("    begin test    ");
