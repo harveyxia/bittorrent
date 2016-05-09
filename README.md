@@ -86,13 +86,13 @@ We implemented the peer-to-peer protocol using two finite state machines, one fo
 
 Note: C = peerChoking and I = amInterested.
 
-![downloader FSM](downloader-fsm-01.svg)
+<img src="downloader-fsm-01.svg" style="width: 50%" />
 
 #### Uploader FSM
 
 Note: C = amChoking and I = peerInterested.
 
-![uploader FSM](uploader-fsm-01.svg)
+<img src="uploader-fsm-01.svg" style="width: 50%" />
 
 In summary
   - each Client (Client.java) is responsible for a single file.
